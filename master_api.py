@@ -329,6 +329,53 @@ def ensemble_predict(per_model: dict) -> tuple[str, float, bool]:
     return final_class, final_confidence, models_agree
 
 
+# ─── Leaf Validation (OOD Detection) ────────────────────────────────────
+def validate_leaf_image(img_bytes: bytes) -> dict:
+    """
+    Check whether an image likely contains a tomato leaf using colour
+    histogram heuristics.  Works on the raw bytes before any model-specific
+    preprocessing.
+    """
+    img = Image.open(io.BytesIO(img_bytes)).convert("RGB").resize((100, 100))
+    arr = np.array(img, dtype=np.float32)
+    r, g, b = arr[:, :, 0], arr[:, :, 1], arr[:, :, 2]
+    total = float(r.size)
+
+    # Green-dominant pixels (healthy leaf tissue)
+    green_ratio = np.sum((g > r) & (g > b) & (g > 50)) / total
+
+    # Brown/tan pixels (diseased tissue, stems)
+    brown_ratio = np.sum((r > g * 0.85) & (g > b) & (r > 50) & (r < 220)) / total
+
+    # Dark spot pixels (necrosis)
+    dark_ratio = np.sum((r < 80) & (g < 80) & (b < 80) & ((r + g + b) > 30)) / total
+
+    # Yellow pixels (chlorosis, early disease)
+    yellow_ratio = np.sum((r > 150) & (g > 150) & (b < 100)) / total
+
+    # Combined leaf-likeness score
+    leaf_score = green_ratio + brown_ratio * 0.6 + dark_ratio * 0.3 + yellow_ratio * 0.5
+
+    # Texture check (std dev across channels — solid colours fail)
+    channel_std = float(np.mean([np.std(r), np.std(g), np.std(b)]))
+    has_texture = channel_std > 20
+
+    threshold = 0.20  # ≥20 % of pixels must look leaf-like
+    is_leaf = leaf_score >= threshold and has_texture
+
+    reason = ""
+    if not has_texture:
+        reason = "Image appears to be a solid colour or graphic, not a photograph of a leaf."
+    elif leaf_score < threshold:
+        reason = "Image does not appear to contain plant or leaf tissue."
+
+    return {
+        "is_leaf": is_leaf,
+        "leaf_score": round(leaf_score * 100, 1),
+        "reason": reason,
+    }
+
+
 # ─── API Endpoints ──────────────────────────────────────────────────────
 @app.get("/")
 def health_check():
@@ -373,6 +420,9 @@ async def predict(
     img_bytes = await file.read()
     if len(img_bytes) > 10 * 1024 * 1024:
         raise HTTPException(status_code=400, detail="Image too large. Maximum size is 10MB.")
+
+    # Validate that the image actually looks like a leaf
+    validation = validate_leaf_image(img_bytes)
 
     try:
         input_tensor = preprocess_image(img_bytes)
@@ -423,6 +473,7 @@ async def predict(
         "models_agree": models_agree,
         "mode": mode,
         "diagnostics": diagnostics,
+        "validation": validation,
     }
 
     # Log prediction summary

@@ -109,6 +109,9 @@ The ensemble averaging in `master_api.py` now uses raw float probabilities (0-1)
 ### ✅ Smart Entropy-Weighted Ensemble
 The ensemble now uses an **entropy-weighted averaging** mechanism. Instead of naive equal weights, models with sharper (lower entropy/more confident) probability distributions receive a higher weight. This prevents a confused model from dragging down the prediction of a highly confident model (e.g., resolving the ResNet Septoria/Early Blight confusion).
 
+### ✅ Out-of-Distribution (OOD) Detection
+Added a `validate_leaf_image` function in `master_api.py` that analyzes color histograms (green/brown/dark/yellow ratios) and texture. If an uploaded image does not appear to be a plant/leaf, the frontend displays a warning banner to prevent hallucinated diagnoses.
+
 ### Confidence Threshold
 `master_api.py` includes a `CONFIDENCE_THRESHOLD = 60.0` — predictions below this threshold are flagged with `is_confident: false` in the response.
 
@@ -245,8 +248,9 @@ The frontend currently connects to `http://localhost:8000` (hardcoded in `App.js
 - The `TransformSubset` wrapper ensures train/val/test each get their own transforms without mutating the shared dataset.
 - ONNX export uses `opset_version=18` with dynamic batch axes.
 - Class mappings are generated from `datasets.ImageFolder` which sorts class directories alphabetically.
+- **ResNet-50 Specifics:** To resolve class confusion (Septoria vs. Early Blight), ResNet-50 was retrained with advanced techniques: **Mixup** (alpha=0.2), **Label Smoothing** (0.1), **CosineAnnealingWarmRestarts**, and stronger spatial augmentations (RandomAffine, RandomPerspective, RandomErasing). Trained for 25 epochs, achieving ~97.6% validation accuracy.
 
 ### Training Scripts (Reference)
 - Fixed training scripts are in `_training_ref/`:
   - `train_efficientnet_b0.py` — EfficientNet-B0 training script (with TransformSubset fix)
-  - `train_resnet50.py` — ResNet-50 training script (with TransformSubset fix)
+  - `train_resnet50.py` — ResNet-50 training script (with TransformSubset fix, Mixup, and Label Smoothing)
