@@ -250,6 +250,7 @@ The frontend currently connects to `http://localhost:8000` (hardcoded in `App.js
 ### Backend Rules
 - When modifying the backend, ensure the `DISEASE_INFO` dictionary reflects all fields expected by the frontend (`symptoms`, `treatment`, `prevention`, `precautions`).
 - When dealing with ONNX models, note that `onnxruntime` CPUExecutionProvider is used due to the typical limits on deployment environments.
+- **Similarity Index / ONNX Dependency:** Extracting visual embeddings dynamically relies on modifying the ONNX graph using the `onnx` package. This package is notorious for failing to install on Windows due to path length limitations (`[WinError 206]`). Therefore, the backend gracefully degrades: if `onnx` or the similarity index is missing, the `/similar` endpoint will return 503 and the UI will simply hide the "Similar Cases" section, while the rest of the application runs perfectly.
 - Both models use **identical** preprocessing: 224×224, ImageNet normalization, CHW format.
 - The ensemble averages softmax probabilities across models, then picks the argmax.
 

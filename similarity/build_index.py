@@ -174,11 +174,27 @@ def build_index(dataset_dir: str, onnx_path: str, output_dir: str):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Build similarity index for tomato disease classifier")
-    parser.add_argument("--dataset", required=True, help="Path to dataset root (contains class subdirectories)")
-    parser.add_argument("--onnx", default="train-new/efficient-net/tomato_disease_efficientnet.onnx",
-                        help="Path to EfficientNet ONNX model")
-    parser.add_argument("--output", default="similarity", help="Output directory")
-    args = parser.parse_args()
+    # Detect if running directly inside a Jupyter/Colab cell
+    if 'ipykernel' in sys.modules:
+        print("💡 Detected Jupyter/Colab notebook environment.")
+        print("Using default paths. Modify these variables in the script if needed:")
+        
+        # ⚠️ CHANGE THESE IF NEEDED WHEN RUNNING IN COLAB ⚠️
+        DATASET_DIR = "/content/tomato_dataset" # Path to your dataset folder
+        ONNX_PATH = "/content/tomato_disease_efficientnet.onnx" # Path to your ONNX model
+        OUTPUT_DIR = "similarity"
+        
+        print(f"  Dataset: {DATASET_DIR}")
+        print(f"  ONNX: {ONNX_PATH}")
+        print(f"  Output: {OUTPUT_DIR}\n")
+        
+        build_index(DATASET_DIR, ONNX_PATH, OUTPUT_DIR)
+    else:
+        parser = argparse.ArgumentParser(description="Build similarity index for tomato disease classifier")
+        parser.add_argument("--dataset", required=True, help="Path to dataset root (contains class subdirectories)")
+        parser.add_argument("--onnx", default="train-new/efficient-net/tomato_disease_efficientnet.onnx",
+                            help="Path to EfficientNet ONNX model")
+        parser.add_argument("--output", default="similarity", help="Output directory")
+        args = parser.parse_args()
 
-    build_index(args.dataset, args.onnx, args.output)
+        build_index(args.dataset, args.onnx, args.output)

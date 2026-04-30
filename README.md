@@ -7,6 +7,8 @@ AI-powered tomato leaf disease detection using an **entropy-weighted ensemble** 
 - **Multi-Model Ensemble** — Combines EfficientNet-B0 (~5.3M params) and ResNet-50 (~25.6M params) with entropy-weighted averaging. More confident models automatically receive higher influence.
 - **5 Disease Classes** — Bacterial Spot, Early Blight, Late Blight, Septoria Leaf Spot, and Healthy.
 - **Saliency Heatmaps** — Occlusion-sensitivity maps showing which image regions matter most to the model's decision.
+- **Visual Similarity Index** — Finds and displays top-matching reference cases from a pre-computed gallery using CNN embeddings.
+- **LLM Personalised Advisor** — Generates tailored, structured treatment advice based on the model's diagnosis and the user's growing context (powered by Llama 3.3 via Groq).
 - **Clinical Reports** — Symptoms, treatment protocols, prevention strategies, and precautions for each disease.
 - **Prediction History** — Local storage of past analyses for quick reference.
 - **Confidence Thresholding** — Predictions below 60% confidence are flagged as uncertain.
@@ -35,7 +37,7 @@ Frontend (React + Vite)  →  FastAPI Backend  →  ONNX Runtime (CPU)
 
 ### Backend
 ```bash
-pip install fastapi uvicorn onnxruntime pillow numpy
+pip install fastapi uvicorn onnxruntime pillow numpy groq python-dotenv
 python master_api.py
 # → http://localhost:8000
 ```
@@ -49,6 +51,13 @@ npm run dev
 ```
 
 ### Environment Variables
+Create a `.env` file in the root for the backend:
+```env
+# Required for the LLM Personalised Advisor feature
+GROQ_API_KEY=gsk_your_api_key_here
+GROQ_MODEL=llama-3.3-70b-versatile
+```
+
 Create `frontend/.env` for production:
 ```env
 VITE_API_URL=https://your-backend-url.com
@@ -70,6 +79,13 @@ train-new/
     └── class_mapping_resnet.json               ← in repo
 ```
 
+### Visual Similarity Index Setup
+The `/similar` endpoint requires a pre-computed index. To generate this, run the provided script in Google Colab against your training dataset:
+```bash
+python similarity/build_index.py --dataset /path/to/dataset --onnx train-new/efficient-net/tomato_disease_efficientnet.onnx
+```
+Then download the generated `embeddings.npz`, `manifest.json`, and `thumbnails/` into the `similarity/` directory of this repo.
+
 ## API Endpoints
 
 | Method | Path | Description |
@@ -78,6 +94,8 @@ train-new/
 | `GET` | `/models` | Model metadata |
 | `POST` | `/predict?mode=ensemble\|efnet\|resnet` | Disease prediction |
 | `POST` | `/heatmap?model=efnet\|resnet` | Saliency heatmap |
+| `POST` | `/similar?top_k=3` | Find visually similar reference cases |
+| `POST` | `/advisor` | Generate LLM personalised treatment advice |
 
 ## Training
 
@@ -86,7 +104,7 @@ Both models were trained on Google Colab (T4 GPU) using a `TransformSubset` wrap
 | Model | Val Acc | Epochs | Key Features |
 |-------|---------|--------|--------------|
 | EfficientNet-B0 | 98.55% | 15 | Standard augmentation |
-| ResNet-50 (v2) | — | 25 | Mixup, label smoothing, CosineAnnealing, stronger augmentation |
+| ResNet-50 (v2) | 97.60% | 25 | Mixup, label smoothing, CosineAnnealing, stronger augmentation |
 
 ## Project Structure
 

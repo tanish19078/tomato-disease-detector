@@ -1,0 +1,1502 @@
+[
+  {
+    "index": 0,
+    "class": "Tomato___Bacterial_spot",
+    "source_file": "0455b531-4820-41c3-87bb-fe5341559456.JPG"
+  },
+  {
+    "index": 1,
+    "class": "Tomato___Bacterial_spot",
+    "source_file": "0584fc7a-3ec5-483d-a3f0-9fc5cd038e8f.JPG"
+  },
+  {
+    "index": 2,
+    "class": "Tomato___Bacterial_spot",
+    "source_file": "08f277b5-ab69-4f89-918d-73fa46491346.JPG"
+  },
+  {
+    "index": 3,
+    "class": "Tomato___Bacterial_spot",
+    "source_file": "093ac117-9446-4467-8577-50d0d91593db.JPG"
+  },
+  {
+    "index": 4,
+    "class": "Tomato___Bacterial_spot",
+    "source_file": "14021719-0e6a-4feb-8e55-a919dd257b67.jpg"
+  },
+  {
+    "index": 5,
+    "class": "Tomato___Bacterial_spot",
+    "source_file": "147da0c6-0be4-43f7-8782-7f4079111a16.jpg"
+  },
+  {
+    "index": 6,
+    "class": "Tomato___Bacterial_spot",
+    "source_file": "15bfe962-d2e5-41ce-b2a4-0905087fd461.JPG"
+  },
+  {
+    "index": 7,
+    "class": "Tomato___Bacterial_spot",
+    "source_file": "1d2b6e8d-ca6d-4280-9750-cf507c45921b.JPG"
+  },
+  {
+    "index": 8,
+    "class": "Tomato___Bacterial_spot",
+    "source_file": "22888b81-f3c0-412b-81c9-918862602b6f.JPG"
+  },
+  {
+    "index": 9,
+    "class": "Tomato___Bacterial_spot",
+    "source_file": "2dc48536-07a7-44d3-8249-12d46d52971f.jpg"
+  },
+  {
+    "index": 10,
+    "class": "Tomato___Bacterial_spot",
+    "source_file": "31078f88-eb2c-4261-9b8f-38d600871a2d.JPG"
+  },
+  {
+    "index": 11,
+    "class": "Tomato___Bacterial_spot",
+    "source_file": "3a634264-946c-4e32-88d1-0f91a83dae4b.JPG"
+  },
+  {
+    "index": 12,
+    "class": "Tomato___Bacterial_spot",
+    "source_file": "3c078678-9af5-4816-8d98-e17ecca6c8c1.JPG"
+  },
+  {
+    "index": 13,
+    "class": "Tomato___Bacterial_spot",
+    "source_file": "3f4360a0-3c22-4961-b5ca-58f1558a0014.jpg"
+  },
+  {
+    "index": 14,
+    "class": "Tomato___Bacterial_spot",
+    "source_file": "3f82bf23-8631-4e82-a705-9b26a92f4052.JPG"
+  },
+  {
+    "index": 15,
+    "class": "Tomato___Bacterial_spot",
+    "source_file": "44f1a802-fbfb-49d2-a72b-5203d2b55e87.JPG"
+  },
+  {
+    "index": 16,
+    "class": "Tomato___Bacterial_spot",
+    "source_file": "48f823e0-bb83-4997-9ad5-0025a525a884.JPG"
+  },
+  {
+    "index": 17,
+    "class": "Tomato___Bacterial_spot",
+    "source_file": "4b64644f-86d4-477f-8e8f-4a258eb50812.JPG"
+  },
+  {
+    "index": 18,
+    "class": "Tomato___Bacterial_spot",
+    "source_file": "534b6c74-88a6-4fac-a497-f6275710e80d.jpg"
+  },
+  {
+    "index": 19,
+    "class": "Tomato___Bacterial_spot",
+    "source_file": "545d9e7f-151d-439d-9567-57aaa4c6ecc2.JPG"
+  },
+  {
+    "index": 20,
+    "class": "Tomato___Bacterial_spot",
+    "source_file": "55d25c0c-625d-4dcd-996f-fe370ea56dfb.JPG"
+  },
+  {
+    "index": 21,
+    "class": "Tomato___Bacterial_spot",
+    "source_file": "591a5d07-c47d-45b2-9fa9-1af4dc4d1944.JPG"
+  },
+  {
+    "index": 22,
+    "class": "Tomato___Bacterial_spot",
+    "source_file": "5aaa703c-c2b0-4307-baa9-b07121b2c9de.JPG"
+  },
+  {
+    "index": 23,
+    "class": "Tomato___Bacterial_spot",
+    "source_file": "5ece0484-7837-4bd3-874e-5c45da8288b8.JPG"
+  },
+  {
+    "index": 24,
+    "class": "Tomato___Bacterial_spot",
+    "source_file": "631a0142-9bdc-48d2-9533-c1128882e1b9.JPG"
+  },
+  {
+    "index": 25,
+    "class": "Tomato___Bacterial_spot",
+    "source_file": "670b1d68-3737-4583-b078-54f5d13a0bbd.JPG"
+  },
+  {
+    "index": 26,
+    "class": "Tomato___Bacterial_spot",
+    "source_file": "74814d64-af19-4b69-b3d2-24920f2958d7.JPG"
+  },
+  {
+    "index": 27,
+    "class": "Tomato___Bacterial_spot",
+    "source_file": "7585a794-3d49-461c-b811-46a42dca32df.JPG"
+  },
+  {
+    "index": 28,
+    "class": "Tomato___Bacterial_spot",
+    "source_file": "7f5e0510-a4fe-4971-9fc1-aab3c3f8f3ed.jpg"
+  },
+  {
+    "index": 29,
+    "class": "Tomato___Bacterial_spot",
+    "source_file": "813fb239-4c34-4556-be50-b8abcb9a8900.JPG"
+  },
+  {
+    "index": 30,
+    "class": "Tomato___Bacterial_spot",
+    "source_file": "82140044-619e-4c23-81e2-2e7ce5205f94.JPG"
+  },
+  {
+    "index": 31,
+    "class": "Tomato___Bacterial_spot",
+    "source_file": "84b2fd1c-2adf-4654-bc11-0727fc8ea1e1.JPG"
+  },
+  {
+    "index": 32,
+    "class": "Tomato___Bacterial_spot",
+    "source_file": "84f814f6-9573-4b42-9cda-262345ab48dc.JPG"
+  },
+  {
+    "index": 33,
+    "class": "Tomato___Bacterial_spot",
+    "source_file": "85826d7b-2af8-43c1-b023-97164d5dc6f0.JPG"
+  },
+  {
+    "index": 34,
+    "class": "Tomato___Bacterial_spot",
+    "source_file": "89552c34-3c4b-474a-85a5-5afed8436ce5.JPG"
+  },
+  {
+    "index": 35,
+    "class": "Tomato___Bacterial_spot",
+    "source_file": "8a449c9f-caac-4863-9347-649e48fbb076.jpg"
+  },
+  {
+    "index": 36,
+    "class": "Tomato___Bacterial_spot",
+    "source_file": "8a70c4ee-e52e-437c-af38-192578aa9d98.JPG"
+  },
+  {
+    "index": 37,
+    "class": "Tomato___Bacterial_spot",
+    "source_file": "93e47dba-acb9-4145-bbe4-61e3b8aa695b.JPG"
+  },
+  {
+    "index": 38,
+    "class": "Tomato___Bacterial_spot",
+    "source_file": "95eb25c1-528c-4db2-b46d-02266541ce0c.JPG"
+  },
+  {
+    "index": 39,
+    "class": "Tomato___Bacterial_spot",
+    "source_file": "98e3ff3f-66a1-4f88-b44c-f6d30696785e.JPG"
+  },
+  {
+    "index": 40,
+    "class": "Tomato___Bacterial_spot",
+    "source_file": "9a8e6df7-ace0-4465-b3fc-62e376d9d467.jpg"
+  },
+  {
+    "index": 41,
+    "class": "Tomato___Bacterial_spot",
+    "source_file": "b5.JPG"
+  },
+  {
+    "index": 42,
+    "class": "Tomato___Bacterial_spot",
+    "source_file": "b7ff036f-baae-4aa3-912e-fbe09b60d9c9.JPG"
+  },
+  {
+    "index": 43,
+    "class": "Tomato___Bacterial_spot",
+    "source_file": "bce542f9-277e-45f2-9039-f9ca05f31b54.JPG"
+  },
+  {
+    "index": 44,
+    "class": "Tomato___Bacterial_spot",
+    "source_file": "bs125.JPG"
+  },
+  {
+    "index": 45,
+    "class": "Tomato___Bacterial_spot",
+    "source_file": "bs222.jpg"
+  },
+  {
+    "index": 46,
+    "class": "Tomato___Bacterial_spot",
+    "source_file": "bt48.JPG"
+  },
+  {
+    "index": 47,
+    "class": "Tomato___Bacterial_spot",
+    "source_file": "bt57.JPG"
+  },
+  {
+    "index": 48,
+    "class": "Tomato___Bacterial_spot",
+    "source_file": "cc38474f-3266-4767-9846-4dd381d72696.jpg"
+  },
+  {
+    "index": 49,
+    "class": "Tomato___Bacterial_spot",
+    "source_file": "ceb8fdf8-5920-4f51-8ddc-2309483f5a4d.JPG"
+  },
+  {
+    "index": 50,
+    "class": "Tomato___Bacterial_spot",
+    "source_file": "d78b4c84-122f-44ec-93c7-9de990fec8cf.JPG"
+  },
+  {
+    "index": 51,
+    "class": "Tomato___Bacterial_spot",
+    "source_file": "da89d34b-18db-4731-a3f2-b2f23fa4c7d3.jpg"
+  },
+  {
+    "index": 52,
+    "class": "Tomato___Bacterial_spot",
+    "source_file": "e4fe7f2b-fc19-41b3-a3b8-77e70ae70292.JPG"
+  },
+  {
+    "index": 53,
+    "class": "Tomato___Bacterial_spot",
+    "source_file": "e52b1a7a-3019-4c75-83e3-cdde7f3f1fb1.JPG"
+  },
+  {
+    "index": 54,
+    "class": "Tomato___Bacterial_spot",
+    "source_file": "e7ecd393-3cc0-4f82-93b4-dcbd28a80d3c.JPG"
+  },
+  {
+    "index": 55,
+    "class": "Tomato___Bacterial_spot",
+    "source_file": "edcf0949-6591-45ad-9536-b4f8dfd96d98.JPG"
+  },
+  {
+    "index": 56,
+    "class": "Tomato___Bacterial_spot",
+    "source_file": "f331d5ea-2d32-4748-9cc6-756da3fc0862.JPG"
+  },
+  {
+    "index": 57,
+    "class": "Tomato___Bacterial_spot",
+    "source_file": "f509a493-4599-4824-ad91-eeeed423bb65.JPG"
+  },
+  {
+    "index": 58,
+    "class": "Tomato___Bacterial_spot",
+    "source_file": "fa5cea31-923e-4b53-b8a6-b3ba9d071373.jpg"
+  },
+  {
+    "index": 59,
+    "class": "Tomato___Bacterial_spot",
+    "source_file": "fb6524c4-0471-4931-979d-816614c97e3d.JPG"
+  },
+  {
+    "index": 60,
+    "class": "Tomato___Early_blight",
+    "source_file": "0738a507-e0fb-4094-98c2-ab9ea1ef934a.JPG"
+  },
+  {
+    "index": 61,
+    "class": "Tomato___Early_blight",
+    "source_file": "178fed12-3512-450c-8d09-ad81d4bcc41d.jpg"
+  },
+  {
+    "index": 62,
+    "class": "Tomato___Early_blight",
+    "source_file": "1ab64d82-476f-47b3-a0dc-cd010ac204e3.jpg"
+  },
+  {
+    "index": 63,
+    "class": "Tomato___Early_blight",
+    "source_file": "1cbe6deb-5f12-49d0-999a-078b3a5330ea.jpg"
+  },
+  {
+    "index": 64,
+    "class": "Tomato___Early_blight",
+    "source_file": "1d33fe7b-3496-44c8-99a8-41f20f9b7883.jpg"
+  },
+  {
+    "index": 65,
+    "class": "Tomato___Early_blight",
+    "source_file": "1fe741a3-3c56-49b8-a33c-3b9bb4f6b9a1.jpg"
+  },
+  {
+    "index": 66,
+    "class": "Tomato___Early_blight",
+    "source_file": "32c577da-5074-4641-b242-9b5579471594.JPG"
+  },
+  {
+    "index": 67,
+    "class": "Tomato___Early_blight",
+    "source_file": "38b52942-d2a1-462b-89be-becc32e2bc80.jpg"
+  },
+  {
+    "index": 68,
+    "class": "Tomato___Early_blight",
+    "source_file": "3a481189-7475-4e65-960e-3e884b20dc67.jpg"
+  },
+  {
+    "index": 69,
+    "class": "Tomato___Early_blight",
+    "source_file": "3e699bd2-7796-406a-b804-55556321404c.jpg"
+  },
+  {
+    "index": 70,
+    "class": "Tomato___Early_blight",
+    "source_file": "3f6cc36c-a4ba-49e7-8bee-3be7d2065e9b.JPG"
+  },
+  {
+    "index": 71,
+    "class": "Tomato___Early_blight",
+    "source_file": "496aa8ff-5342-4db3-b9f7-7accd4e7d499.jpg"
+  },
+  {
+    "index": 72,
+    "class": "Tomato___Early_blight",
+    "source_file": "4d44ec05-65a8-488f-8a74-a4007d5b3089.jpg"
+  },
+  {
+    "index": 73,
+    "class": "Tomato___Early_blight",
+    "source_file": "4e767621-52a2-4718-880a-deb0b0ab4295.jpg"
+  },
+  {
+    "index": 74,
+    "class": "Tomato___Early_blight",
+    "source_file": "4f1d383c-2c8e-4b2f-a765-8370a2e45138.jpg"
+  },
+  {
+    "index": 75,
+    "class": "Tomato___Early_blight",
+    "source_file": "50acb28b-ae52-4d30-8ec0-050990076d08.JPG"
+  },
+  {
+    "index": 76,
+    "class": "Tomato___Early_blight",
+    "source_file": "53362e36-09a5-4899-a0dd-a8c8bdc711d2.jpg"
+  },
+  {
+    "index": 77,
+    "class": "Tomato___Early_blight",
+    "source_file": "5b249dae-0984-482f-94f6-5de97fc46b12.jpg"
+  },
+  {
+    "index": 78,
+    "class": "Tomato___Early_blight",
+    "source_file": "5c349bb4-96b3-4920-be00-018584442d23.jpg"
+  },
+  {
+    "index": 79,
+    "class": "Tomato___Early_blight",
+    "source_file": "60f9c1f6-8068-49ed-9cf2-b33e6544cde5.jpg"
+  },
+  {
+    "index": 80,
+    "class": "Tomato___Early_blight",
+    "source_file": "6fdc21c1-09d4-4e1c-b4a5-74e087a92a01.jpg"
+  },
+  {
+    "index": 81,
+    "class": "Tomato___Early_blight",
+    "source_file": "702b5be1-5631-4f7f-a6c2-060dcbdf326d.jpg"
+  },
+  {
+    "index": 82,
+    "class": "Tomato___Early_blight",
+    "source_file": "76163f80-56c7-4711-8d9e-7f6f9eb839e9.jpg"
+  },
+  {
+    "index": 83,
+    "class": "Tomato___Early_blight",
+    "source_file": "7af6a859-886d-4805-9048-9e0e3112f891.jpg"
+  },
+  {
+    "index": 84,
+    "class": "Tomato___Early_blight",
+    "source_file": "871abb9f-b95f-427b-8662-125ef861e7df.jpg"
+  },
+  {
+    "index": 85,
+    "class": "Tomato___Early_blight",
+    "source_file": "88bba03b-66c2-4333-875f-f516fa70be44.JPG"
+  },
+  {
+    "index": 86,
+    "class": "Tomato___Early_blight",
+    "source_file": "8b20b9ac-3fa5-4e2e-ba24-eeb8e7bd934a.JPG"
+  },
+  {
+    "index": 87,
+    "class": "Tomato___Early_blight",
+    "source_file": "8e7056c3-01f0-4628-8fa9-dd16950f777d.jpg"
+  },
+  {
+    "index": 88,
+    "class": "Tomato___Early_blight",
+    "source_file": "949c1ab4-7172-4065-99d5-f3882265aa32.jpg"
+  },
+  {
+    "index": 89,
+    "class": "Tomato___Early_blight",
+    "source_file": "95407b1d-e9ba-45fb-ad62-0b13229af5de.jpg"
+  },
+  {
+    "index": 90,
+    "class": "Tomato___Early_blight",
+    "source_file": "9661af2b-2f9c-4294-ad7b-7e07b38c46e7.jpg"
+  },
+  {
+    "index": 91,
+    "class": "Tomato___Early_blight",
+    "source_file": "96af182b-1aff-482e-acb3-945511d7f464.JPG"
+  },
+  {
+    "index": 92,
+    "class": "Tomato___Early_blight",
+    "source_file": "Gls28.JPG"
+  },
+  {
+    "index": 93,
+    "class": "Tomato___Early_blight",
+    "source_file": "Gls4_lower.jpg"
+  },
+  {
+    "index": 94,
+    "class": "Tomato___Early_blight",
+    "source_file": "Gls58.JPG"
+  },
+  {
+    "index": 95,
+    "class": "Tomato___Early_blight",
+    "source_file": "a4138b73-f686-43e6-ad20-495f4307008b.jpg"
+  },
+  {
+    "index": 96,
+    "class": "Tomato___Early_blight",
+    "source_file": "a9c426ff-e852-4299-a93a-e2c861b94f1d.jpg"
+  },
+  {
+    "index": 97,
+    "class": "Tomato___Early_blight",
+    "source_file": "acaaca3d-4e01-4621-bd1d-70e45d24e619.JPG"
+  },
+  {
+    "index": 98,
+    "class": "Tomato___Early_blight",
+    "source_file": "ade1a377-8c55-4a14-a73f-11471c2bc68d.jpg"
+  },
+  {
+    "index": 99,
+    "class": "Tomato___Early_blight",
+    "source_file": "b5373e1e-bd0a-42cb-a4c7-a79d4f709a76.JPG"
+  },
+  {
+    "index": 100,
+    "class": "Tomato___Early_blight",
+    "source_file": "b7559c11-7b8b-49a1-ae05-ec6fe12c94f3.jpg"
+  },
+  {
+    "index": 101,
+    "class": "Tomato___Early_blight",
+    "source_file": "b8912eff-ea01-42f2-a392-d025ce060f95.jpg"
+  },
+  {
+    "index": 102,
+    "class": "Tomato___Early_blight",
+    "source_file": "bb1d6d52-9c55-401c-b1bd-a5569f3491a7.jpg"
+  },
+  {
+    "index": 103,
+    "class": "Tomato___Early_blight",
+    "source_file": "bbbb3726-01e0-4889-adca-3b7e7bc8db63.JPG"
+  },
+  {
+    "index": 104,
+    "class": "Tomato___Early_blight",
+    "source_file": "c3c29bc7-1315-4bcd-a882-ba2c02b6c908.jpg"
+  },
+  {
+    "index": 105,
+    "class": "Tomato___Early_blight",
+    "source_file": "c48490ae-897c-407d-b68f-833789156961.jpg"
+  },
+  {
+    "index": 106,
+    "class": "Tomato___Early_blight",
+    "source_file": "c4d2bd97-b5ed-46f4-b687-3d6afc0d4cd8.jpg"
+  },
+  {
+    "index": 107,
+    "class": "Tomato___Early_blight",
+    "source_file": "c4febd37-ea62-405e-9b69-7a71d5e28c12.jpg"
+  },
+  {
+    "index": 108,
+    "class": "Tomato___Early_blight",
+    "source_file": "c70b07bb-99ca-4b92-a54c-b3bcc6b66715.jpg"
+  },
+  {
+    "index": 109,
+    "class": "Tomato___Early_blight",
+    "source_file": "ca2b1118-4518-44db-a2f9-c6f73f2338e3.jpg"
+  },
+  {
+    "index": 110,
+    "class": "Tomato___Early_blight",
+    "source_file": "ca3001a8-2695-42c8-a1d0-cbb6bf40c880.jpg"
+  },
+  {
+    "index": 111,
+    "class": "Tomato___Early_blight",
+    "source_file": "d2078b16-d1e4-4704-947d-16c2533c82a2.jpg"
+  },
+  {
+    "index": 112,
+    "class": "Tomato___Early_blight",
+    "source_file": "d7af3df4-8b65-4a91-b1b0-4f2382472261.jpg"
+  },
+  {
+    "index": 113,
+    "class": "Tomato___Early_blight",
+    "source_file": "e6e2dc30-cd8f-4674-884b-c929c1bb16ca.jpg"
+  },
+  {
+    "index": 114,
+    "class": "Tomato___Early_blight",
+    "source_file": "e88bf252-742d-4d89-8f6a-9471f1dfd45a.JPG"
+  },
+  {
+    "index": 115,
+    "class": "Tomato___Early_blight",
+    "source_file": "eb5.jpg"
+  },
+  {
+    "index": 116,
+    "class": "Tomato___Early_blight",
+    "source_file": "eb68.jpg"
+  },
+  {
+    "index": 117,
+    "class": "Tomato___Early_blight",
+    "source_file": "feb8275b-49b9-4031-9a30-3376666ae9b3.jpg"
+  },
+  {
+    "index": 118,
+    "class": "Tomato___Early_blight",
+    "source_file": "ff688c98-a5bc-4cd2-b4f7-b0206eb818b4.jpg"
+  },
+  {
+    "index": 119,
+    "class": "Tomato___Early_blight",
+    "source_file": "h22.JPG"
+  },
+  {
+    "index": 120,
+    "class": "Tomato___Late_blight",
+    "source_file": "024b6298-be44-44a6-924e-feace0f483cc.jpg"
+  },
+  {
+    "index": 121,
+    "class": "Tomato___Late_blight",
+    "source_file": "0326fc30-b9f7-49bd-979f-d5aa3e145a92.jpg"
+  },
+  {
+    "index": 122,
+    "class": "Tomato___Late_blight",
+    "source_file": "04ee2b87-4ddc-4381-8af5-11a7be5995b6.jpg"
+  },
+  {
+    "index": 123,
+    "class": "Tomato___Late_blight",
+    "source_file": "068657b3-823d-4542-93ab-3781a68ceb4b.jpg"
+  },
+  {
+    "index": 124,
+    "class": "Tomato___Late_blight",
+    "source_file": "073c6522-13d0-4d44-ae41-c46daf84a31f.jpg"
+  },
+  {
+    "index": 125,
+    "class": "Tomato___Late_blight",
+    "source_file": "128804e2-30ec-4c32-b73d-6469070ff46b.jpg"
+  },
+  {
+    "index": 126,
+    "class": "Tomato___Late_blight",
+    "source_file": "1997ae2c-88c6-49c6-8e6b-35ed21af5249.jpg"
+  },
+  {
+    "index": 127,
+    "class": "Tomato___Late_blight",
+    "source_file": "1ee75ae1-04e1-4f3f-888f-b9e6aa075001.jpg"
+  },
+  {
+    "index": 128,
+    "class": "Tomato___Late_blight",
+    "source_file": "1fa65aa8-edea-463d-a8ad-bf7c5193ad53.JPG"
+  },
+  {
+    "index": 129,
+    "class": "Tomato___Late_blight",
+    "source_file": "2245b921-3995-4e4b-b30d-ed1da0c1f270.jpg"
+  },
+  {
+    "index": 130,
+    "class": "Tomato___Late_blight",
+    "source_file": "2ecd7cb5-8e93-4ce6-9c36-7b4dbaaafe68.JPG"
+  },
+  {
+    "index": 131,
+    "class": "Tomato___Late_blight",
+    "source_file": "31fa6a54-1fa1-43a3-85da-f38313458f46.JPG"
+  },
+  {
+    "index": 132,
+    "class": "Tomato___Late_blight",
+    "source_file": "332f77db-ff70-4e22-b0dc-ed2c691d2371.JPG"
+  },
+  {
+    "index": 133,
+    "class": "Tomato___Late_blight",
+    "source_file": "34b9536c-03b7-4c54-8e13-5bce4970fa3f.jpg"
+  },
+  {
+    "index": 134,
+    "class": "Tomato___Late_blight",
+    "source_file": "46d27235-5f39-4600-bec8-dfdf8d184d69.JPG"
+  },
+  {
+    "index": 135,
+    "class": "Tomato___Late_blight",
+    "source_file": "4c2fca16-7724-47ad-b20b-f7752e69c9d3.jpg"
+  },
+  {
+    "index": 136,
+    "class": "Tomato___Late_blight",
+    "source_file": "4de473db-a59f-45a3-91dc-274b49442223.jpg"
+  },
+  {
+    "index": 137,
+    "class": "Tomato___Late_blight",
+    "source_file": "54957334-5619-4898-8865-f2e02d4ed247.JPG"
+  },
+  {
+    "index": 138,
+    "class": "Tomato___Late_blight",
+    "source_file": "5beaecc0-43e7-43d1-a9ec-0c53a1a3e549.jpg"
+  },
+  {
+    "index": 139,
+    "class": "Tomato___Late_blight",
+    "source_file": "61418510-5c0c-4da1-84c3-2dd7c8e9d335.jpg"
+  },
+  {
+    "index": 140,
+    "class": "Tomato___Late_blight",
+    "source_file": "6297b953-160c-45f2-975b-ca29b4a7b54b.jpg"
+  },
+  {
+    "index": 141,
+    "class": "Tomato___Late_blight",
+    "source_file": "6344c13a-d4dc-4300-8edf-4e685aa5af6f.jpg"
+  },
+  {
+    "index": 142,
+    "class": "Tomato___Late_blight",
+    "source_file": "6b4a0933-12cb-468a-84e5-ba96f0d36fef.jpg"
+  },
+  {
+    "index": 143,
+    "class": "Tomato___Late_blight",
+    "source_file": "705e75df-ad55-4c2d-bc76-0c8ac51edfe3.JPG"
+  },
+  {
+    "index": 144,
+    "class": "Tomato___Late_blight",
+    "source_file": "708b6cce-3030-4792-9802-0179a0626c1f.jpg"
+  },
+  {
+    "index": 145,
+    "class": "Tomato___Late_blight",
+    "source_file": "733b767a-38af-418b-9275-17e98d9f680e.jpg"
+  },
+  {
+    "index": 146,
+    "class": "Tomato___Late_blight",
+    "source_file": "7668de2b-4278-4d1d-b6e1-bbd63a7ee5d1.jpg"
+  },
+  {
+    "index": 147,
+    "class": "Tomato___Late_blight",
+    "source_file": "79e2c217-615c-4936-b7a2-6eef78a450d4.JPG"
+  },
+  {
+    "index": 148,
+    "class": "Tomato___Late_blight",
+    "source_file": "8140a9c5-2ff7-46b1-a7c9-cd488a03a11e.jpg"
+  },
+  {
+    "index": 149,
+    "class": "Tomato___Late_blight",
+    "source_file": "843cfa29-db2a-4fbe-8579-1ab9d8ee21e1.jpg"
+  },
+  {
+    "index": 150,
+    "class": "Tomato___Late_blight",
+    "source_file": "85c32893-9acd-496a-bf50-5465167e815b.JPG"
+  },
+  {
+    "index": 151,
+    "class": "Tomato___Late_blight",
+    "source_file": "919497ce-2d33-489e-8244-defd380e1ca8.jpg"
+  },
+  {
+    "index": 152,
+    "class": "Tomato___Late_blight",
+    "source_file": "93e720af-78f0-4fbd-a164-0391c6bc460c.jpg"
+  },
+  {
+    "index": 153,
+    "class": "Tomato___Late_blight",
+    "source_file": "94c94609-fb06-4659-ae8a-cfbaa942799d.jpg"
+  },
+  {
+    "index": 154,
+    "class": "Tomato___Late_blight",
+    "source_file": "9be546e3-f203-4a01-ad88-fbb0b86c4d34.JPG"
+  },
+  {
+    "index": 155,
+    "class": "Tomato___Late_blight",
+    "source_file": "a2c122ec-ed5a-4669-b2c5-6ac0bc007aae.jpg"
+  },
+  {
+    "index": 156,
+    "class": "Tomato___Late_blight",
+    "source_file": "adc15271-3717-477d-9da8-c375799c9bae.jpg"
+  },
+  {
+    "index": 157,
+    "class": "Tomato___Late_blight",
+    "source_file": "b26b245c-8a78-46ce-952b-86be79d86300.jpg"
+  },
+  {
+    "index": 158,
+    "class": "Tomato___Late_blight",
+    "source_file": "b84e53c5-1c32-4884-bab7-89fda0d5410a.jpg"
+  },
+  {
+    "index": 159,
+    "class": "Tomato___Late_blight",
+    "source_file": "bb870928-a0cb-4dfd-8928-87805fa53b43.JPG"
+  },
+  {
+    "index": 160,
+    "class": "Tomato___Late_blight",
+    "source_file": "bbdba295-2d87-42e9-998d-d44fba55e76a.jpg"
+  },
+  {
+    "index": 161,
+    "class": "Tomato___Late_blight",
+    "source_file": "c7e7150a-277c-4791-8551-f5f108b5929c.jpg"
+  },
+  {
+    "index": 162,
+    "class": "Tomato___Late_blight",
+    "source_file": "cc373a73-9d9b-43a5-a284-8cc87f6e093e.jpg"
+  },
+  {
+    "index": 163,
+    "class": "Tomato___Late_blight",
+    "source_file": "cf49366d-e3a2-4a09-b3df-18f451c03094.JPG"
+  },
+  {
+    "index": 164,
+    "class": "Tomato___Late_blight",
+    "source_file": "da7f5156-0d61-4e5a-b294-f3adb35af01d.jpg"
+  },
+  {
+    "index": 165,
+    "class": "Tomato___Late_blight",
+    "source_file": "de6992e1-29c7-4422-9d23-a96a8eee341a.jpg"
+  },
+  {
+    "index": 166,
+    "class": "Tomato___Late_blight",
+    "source_file": "e1798253-a3c2-4433-8387-1b1cd40b3c12.JPG"
+  },
+  {
+    "index": 167,
+    "class": "Tomato___Late_blight",
+    "source_file": "e1a17a06-19f5-4807-924c-cc75b47cd367.jpg"
+  },
+  {
+    "index": 168,
+    "class": "Tomato___Late_blight",
+    "source_file": "e351d316-51aa-431e-8ed4-874b483d780a.jpg"
+  },
+  {
+    "index": 169,
+    "class": "Tomato___Late_blight",
+    "source_file": "e368ad75-4d71-4e9c-9345-c87e2de5fa82.jpg"
+  },
+  {
+    "index": 170,
+    "class": "Tomato___Late_blight",
+    "source_file": "e6c34658-f171-48a5-81b2-ba9e87591e57.jpg"
+  },
+  {
+    "index": 171,
+    "class": "Tomato___Late_blight",
+    "source_file": "ea71589c-be80-4b8c-bb52-b8cc49ee41b6.jpg"
+  },
+  {
+    "index": 172,
+    "class": "Tomato___Late_blight",
+    "source_file": "edae141a-57fc-433c-b1ec-ca76d76965f7.jpg"
+  },
+  {
+    "index": 173,
+    "class": "Tomato___Late_blight",
+    "source_file": "f0e9a764-75bf-42af-839e-e985f348d2ea.JPG"
+  },
+  {
+    "index": 174,
+    "class": "Tomato___Late_blight",
+    "source_file": "f5728863-2c1b-48f5-8995-d9c5c6268232.JPG"
+  },
+  {
+    "index": 175,
+    "class": "Tomato___Late_blight",
+    "source_file": "t50.JPG"
+  },
+  {
+    "index": 176,
+    "class": "Tomato___Late_blight",
+    "source_file": "tbl113.JPG"
+  },
+  {
+    "index": 177,
+    "class": "Tomato___Late_blight",
+    "source_file": "tbl128.jpg"
+  },
+  {
+    "index": 178,
+    "class": "Tomato___Late_blight",
+    "source_file": "tbl237.jpg"
+  },
+  {
+    "index": 179,
+    "class": "Tomato___Late_blight",
+    "source_file": "tbl80.JPG"
+  },
+  {
+    "index": 180,
+    "class": "Tomato___Septoria_leaf_spot",
+    "source_file": "076b1634-b59c-421b-a694-cf5b9c701e1c.jpg"
+  },
+  {
+    "index": 181,
+    "class": "Tomato___Septoria_leaf_spot",
+    "source_file": "0f025aeb-479c-4972-b8c9-283d18376071.jpg"
+  },
+  {
+    "index": 182,
+    "class": "Tomato___Septoria_leaf_spot",
+    "source_file": "170ee28a-9ed6-4cf0-8567-4475cdc676c7.jpg"
+  },
+  {
+    "index": 183,
+    "class": "Tomato___Septoria_leaf_spot",
+    "source_file": "1b0ea9eb-a0f9-44b1-b3d2-a362fa4a76b3.jpg"
+  },
+  {
+    "index": 184,
+    "class": "Tomato___Septoria_leaf_spot",
+    "source_file": "1ef6f4cd-2e74-4746-8d6f-b1e02792acf6.jpg"
+  },
+  {
+    "index": 185,
+    "class": "Tomato___Septoria_leaf_spot",
+    "source_file": "1f63bc16-9135-43a2-992f-22709227a6d3.jpg"
+  },
+  {
+    "index": 186,
+    "class": "Tomato___Septoria_leaf_spot",
+    "source_file": "254f5c80-f1a6-4cf2-a9b6-dc5dea1e48ca.jpg"
+  },
+  {
+    "index": 187,
+    "class": "Tomato___Septoria_leaf_spot",
+    "source_file": "26f7e0d3-bd6a-4252-8221-a73d9a44d2e6.jpg"
+  },
+  {
+    "index": 188,
+    "class": "Tomato___Septoria_leaf_spot",
+    "source_file": "282fc689-6dfb-4bff-9f54-567769a63126.jpg"
+  },
+  {
+    "index": 189,
+    "class": "Tomato___Septoria_leaf_spot",
+    "source_file": "3190c43b-951c-4fd0-abab-4e0801889849.jpg"
+  },
+  {
+    "index": 190,
+    "class": "Tomato___Septoria_leaf_spot",
+    "source_file": "31b90277-299b-4fc7-9437-ed8dd54bed34.jpg"
+  },
+  {
+    "index": 191,
+    "class": "Tomato___Septoria_leaf_spot",
+    "source_file": "323e46b4-2e32-4792-aba5-e257c9f3bff2.jpg"
+  },
+  {
+    "index": 192,
+    "class": "Tomato___Septoria_leaf_spot",
+    "source_file": "33941386-4f6d-4e7b-bfef-f319be27a0ca.jpg"
+  },
+  {
+    "index": 193,
+    "class": "Tomato___Septoria_leaf_spot",
+    "source_file": "36b9f2d0-e3ae-4892-94db-3764a79bf53e.jpg"
+  },
+  {
+    "index": 194,
+    "class": "Tomato___Septoria_leaf_spot",
+    "source_file": "3d8a625d-e137-4e31-ab63-c6a5c437aa07.jpg"
+  },
+  {
+    "index": 195,
+    "class": "Tomato___Septoria_leaf_spot",
+    "source_file": "428a497c-6143-44bd-828d-dd6d1d032a84.jpg"
+  },
+  {
+    "index": 196,
+    "class": "Tomato___Septoria_leaf_spot",
+    "source_file": "44463ac3-fabc-4c28-9952-86fda9f27a3f.jpg"
+  },
+  {
+    "index": 197,
+    "class": "Tomato___Septoria_leaf_spot",
+    "source_file": "494f034f-2abc-4bea-bc6e-89eeb9f06707.jpg"
+  },
+  {
+    "index": 198,
+    "class": "Tomato___Septoria_leaf_spot",
+    "source_file": "4e256695-63d1-4183-9a25-ee0a6c5e0b05.jpg"
+  },
+  {
+    "index": 199,
+    "class": "Tomato___Septoria_leaf_spot",
+    "source_file": "61093f91-bf51-4a21-ab7a-593e582209c8.jpg"
+  },
+  {
+    "index": 200,
+    "class": "Tomato___Septoria_leaf_spot",
+    "source_file": "6db5a0a5-5cd8-4887-96ab-cbc07853a115.jpg"
+  },
+  {
+    "index": 201,
+    "class": "Tomato___Septoria_leaf_spot",
+    "source_file": "7046860d-0b37-472b-b3d2-4ee384e4256e.jpg"
+  },
+  {
+    "index": 202,
+    "class": "Tomato___Septoria_leaf_spot",
+    "source_file": "73ca2d99-96ef-40ba-86f6-38b8e861250d.jpg"
+  },
+  {
+    "index": 203,
+    "class": "Tomato___Septoria_leaf_spot",
+    "source_file": "776e2f5a-e8ba-4a36-a010-99ae296429c0.jpg"
+  },
+  {
+    "index": 204,
+    "class": "Tomato___Septoria_leaf_spot",
+    "source_file": "790608cb-3e11-4d2b-8a42-5a170e2bfa3f.jpg"
+  },
+  {
+    "index": 205,
+    "class": "Tomato___Septoria_leaf_spot",
+    "source_file": "7bb5f1b7-a9d9-454e-817c-46f3573af363.jpg"
+  },
+  {
+    "index": 206,
+    "class": "Tomato___Septoria_leaf_spot",
+    "source_file": "81f8ab36-2b3f-4292-a202-4414dd8e043e.jpg"
+  },
+  {
+    "index": 207,
+    "class": "Tomato___Septoria_leaf_spot",
+    "source_file": "88664572-85c8-4633-a84d-a8beff478197.jpg"
+  },
+  {
+    "index": 208,
+    "class": "Tomato___Septoria_leaf_spot",
+    "source_file": "8914f201-19a8-428f-b9ad-5f04d336688e.jpg"
+  },
+  {
+    "index": 209,
+    "class": "Tomato___Septoria_leaf_spot",
+    "source_file": "8bc23a0e-deb3-457a-a821-560db01af923.jpg"
+  },
+  {
+    "index": 210,
+    "class": "Tomato___Septoria_leaf_spot",
+    "source_file": "8bf58be0-d67c-4c64-920d-4860e443455a.jpg"
+  },
+  {
+    "index": 211,
+    "class": "Tomato___Septoria_leaf_spot",
+    "source_file": "8e59b9aa-3b62-4284-8aa1-f841a0f7666f.jpg"
+  },
+  {
+    "index": 212,
+    "class": "Tomato___Septoria_leaf_spot",
+    "source_file": "8f086b29-aed1-4725-a6e0-75ee1d46135b.jpg"
+  },
+  {
+    "index": 213,
+    "class": "Tomato___Septoria_leaf_spot",
+    "source_file": "91b47b96-ac58-43cc-9b51-c798e152d677.jpg"
+  },
+  {
+    "index": 214,
+    "class": "Tomato___Septoria_leaf_spot",
+    "source_file": "a87d4cfe-7ee7-4cad-b537-e281392035af.jpg"
+  },
+  {
+    "index": 215,
+    "class": "Tomato___Septoria_leaf_spot",
+    "source_file": "b57b9e56-38be-4867-829d-2f5c7e4e3bb1.jpg"
+  },
+  {
+    "index": 216,
+    "class": "Tomato___Septoria_leaf_spot",
+    "source_file": "c00e3b2e-0cf7-40c6-9a6b-f7c71b9688ab.jpg"
+  },
+  {
+    "index": 217,
+    "class": "Tomato___Septoria_leaf_spot",
+    "source_file": "c06bfe87-1b60-4614-b3b8-a1cc9f09288c.jpg"
+  },
+  {
+    "index": 218,
+    "class": "Tomato___Septoria_leaf_spot",
+    "source_file": "cbad09ab-1e20-48d9-9a5d-9627ca29551d.jpg"
+  },
+  {
+    "index": 219,
+    "class": "Tomato___Septoria_leaf_spot",
+    "source_file": "cd68810c-3b87-4b5a-bca4-bbae2c7a6ddd.jpg"
+  },
+  {
+    "index": 220,
+    "class": "Tomato___Septoria_leaf_spot",
+    "source_file": "ceb7b58d-b728-4f59-8def-33b7565ec230.jpg"
+  },
+  {
+    "index": 221,
+    "class": "Tomato___Septoria_leaf_spot",
+    "source_file": "d4265162-b4e6-45b5-af4f-8d9aa2cb6399.jpg"
+  },
+  {
+    "index": 222,
+    "class": "Tomato___Septoria_leaf_spot",
+    "source_file": "d4fe39c1-b409-45de-9ee5-d8dfd65e2c78.jpg"
+  },
+  {
+    "index": 223,
+    "class": "Tomato___Septoria_leaf_spot",
+    "source_file": "d773e7ad-9765-44db-a94e-031936db2cda.jpg"
+  },
+  {
+    "index": 224,
+    "class": "Tomato___Septoria_leaf_spot",
+    "source_file": "da5c494f-a5ed-4c46-8c9d-1fee6a7f5be3.jpg"
+  },
+  {
+    "index": 225,
+    "class": "Tomato___Septoria_leaf_spot",
+    "source_file": "e9571dce-38c2-475f-9752-cbacdb923039.jpg"
+  },
+  {
+    "index": 226,
+    "class": "Tomato___Septoria_leaf_spot",
+    "source_file": "f51ca5f3-1f0b-48c9-b368-c485599c7dcb.jpg"
+  },
+  {
+    "index": 227,
+    "class": "Tomato___Septoria_leaf_spot",
+    "source_file": "f7edd991-3132-412b-b64b-f0b67f20d039.jpg"
+  },
+  {
+    "index": 228,
+    "class": "Tomato___Septoria_leaf_spot",
+    "source_file": "s107.jpg"
+  },
+  {
+    "index": 229,
+    "class": "Tomato___Septoria_leaf_spot",
+    "source_file": "s112.jpg"
+  },
+  {
+    "index": 230,
+    "class": "Tomato___Septoria_leaf_spot",
+    "source_file": "s159.jpg"
+  },
+  {
+    "index": 231,
+    "class": "Tomato___Septoria_leaf_spot",
+    "source_file": "s63.jpg"
+  },
+  {
+    "index": 232,
+    "class": "Tomato___Septoria_leaf_spot",
+    "source_file": "s72.jpg"
+  },
+  {
+    "index": 233,
+    "class": "Tomato___Septoria_leaf_spot",
+    "source_file": "st35.jpg"
+  },
+  {
+    "index": 234,
+    "class": "Tomato___Septoria_leaf_spot",
+    "source_file": "st50.JPG"
+  },
+  {
+    "index": 235,
+    "class": "Tomato___Septoria_leaf_spot",
+    "source_file": "t8.jpg"
+  },
+  {
+    "index": 236,
+    "class": "Tomato___Septoria_leaf_spot",
+    "source_file": "ts10.jpg"
+  },
+  {
+    "index": 237,
+    "class": "Tomato___Septoria_leaf_spot",
+    "source_file": "ts37.jpg"
+  },
+  {
+    "index": 238,
+    "class": "Tomato___Septoria_leaf_spot",
+    "source_file": "ts53.jpg"
+  },
+  {
+    "index": 239,
+    "class": "Tomato___Septoria_leaf_spot",
+    "source_file": "ts71.jpg"
+  },
+  {
+    "index": 240,
+    "class": "Tomato___healthy",
+    "source_file": "084283ec-00d8-413b-903d-261f598aab4c.jpg"
+  },
+  {
+    "index": 241,
+    "class": "Tomato___healthy",
+    "source_file": "0cacd9f2-c4c0-4f14-b573-e6beaad947ad.jpg"
+  },
+  {
+    "index": 242,
+    "class": "Tomato___healthy",
+    "source_file": "0f942ec6-5509-4c9e-b147-7d09126802e9.jpg"
+  },
+  {
+    "index": 243,
+    "class": "Tomato___healthy",
+    "source_file": "10993b88-04c3-40f4-8b3e-6a512d5cc6b3.jpg"
+  },
+  {
+    "index": 244,
+    "class": "Tomato___healthy",
+    "source_file": "132feeca-41cc-48e3-a3e3-e8f529bf6ba4.jpg"
+  },
+  {
+    "index": 245,
+    "class": "Tomato___healthy",
+    "source_file": "13759a7f-29ac-4900-ab49-c8bf83869648.jpg"
+  },
+  {
+    "index": 246,
+    "class": "Tomato___healthy",
+    "source_file": "1697eeca-d75f-40ea-bff3-38dad4515c68.jpg"
+  },
+  {
+    "index": 247,
+    "class": "Tomato___healthy",
+    "source_file": "18f01bce-f7dc-4537-a929-137d8e3a0961.jpg"
+  },
+  {
+    "index": 248,
+    "class": "Tomato___healthy",
+    "source_file": "27704b56-f192-4bf1-a213-4af20627a033.jpg"
+  },
+  {
+    "index": 249,
+    "class": "Tomato___healthy",
+    "source_file": "2803390b-0776-4f01-92d8-40097f3cc6ac.jpg"
+  },
+  {
+    "index": 250,
+    "class": "Tomato___healthy",
+    "source_file": "28a0b87c-0db4-461f-81bd-b17a746b1f28.jpg"
+  },
+  {
+    "index": 251,
+    "class": "Tomato___healthy",
+    "source_file": "2d6eddc6-028d-4829-848b-32b4bdcd028c.jpg"
+  },
+  {
+    "index": 252,
+    "class": "Tomato___healthy",
+    "source_file": "33d59dce-5d71-46f5-ae7f-dc271654f951.jpg"
+  },
+  {
+    "index": 253,
+    "class": "Tomato___healthy",
+    "source_file": "45772270-7caf-4dae-bbb4-e421fbbc468d.jpg"
+  },
+  {
+    "index": 254,
+    "class": "Tomato___healthy",
+    "source_file": "482318cd-70cd-4cfa-bb96-9c773b9a1c7a.jpg"
+  },
+  {
+    "index": 255,
+    "class": "Tomato___healthy",
+    "source_file": "4c20b61b-b982-4cc0-860a-d8b9aa2f0cdf.jpg"
+  },
+  {
+    "index": 256,
+    "class": "Tomato___healthy",
+    "source_file": "4d443f6e-1291-4158-a5ee-340db3f79611.jpg"
+  },
+  {
+    "index": 257,
+    "class": "Tomato___healthy",
+    "source_file": "540e7501-f596-4a80-9a09-c6992dc3896b.jpg"
+  },
+  {
+    "index": 258,
+    "class": "Tomato___healthy",
+    "source_file": "577084c9-6710-4aee-ac56-bf0ef64c5580.jpg"
+  },
+  {
+    "index": 259,
+    "class": "Tomato___healthy",
+    "source_file": "59ca8a48-311b-4ec9-a1bf-c39cb80e0a73.jpg"
+  },
+  {
+    "index": 260,
+    "class": "Tomato___healthy",
+    "source_file": "5a1824ca-e563-4536-9659-6da485c1d9dd.jpg"
+  },
+  {
+    "index": 261,
+    "class": "Tomato___healthy",
+    "source_file": "654fd421-a152-4e47-a03c-dede7c398a31.jpg"
+  },
+  {
+    "index": 262,
+    "class": "Tomato___healthy",
+    "source_file": "74c137d8-c193-44ea-9a7f-e28cf958ff9d.jpg"
+  },
+  {
+    "index": 263,
+    "class": "Tomato___healthy",
+    "source_file": "810b3c14-b5e5-4ded-804a-9c4d3274880c.jpg"
+  },
+  {
+    "index": 264,
+    "class": "Tomato___healthy",
+    "source_file": "84927232-7430-4084-8677-b567e3d9e522.jpg"
+  },
+  {
+    "index": 265,
+    "class": "Tomato___healthy",
+    "source_file": "85ffae5c-7b3a-4d30-8c35-eff1474d8e1e.jpg"
+  },
+  {
+    "index": 266,
+    "class": "Tomato___healthy",
+    "source_file": "8c1c5e0f-9013-42fa-a26a-0e4991dfe4f1.jpg"
+  },
+  {
+    "index": 267,
+    "class": "Tomato___healthy",
+    "source_file": "90a68b9d-b08c-49a5-a967-78e0ccd42599.jpg"
+  },
+  {
+    "index": 268,
+    "class": "Tomato___healthy",
+    "source_file": "9359f989-2b6f-45b8-94bc-a83bd5535d9c.jpg"
+  },
+  {
+    "index": 269,
+    "class": "Tomato___healthy",
+    "source_file": "9ec6490a-da40-4964-b29c-32f00227cac8.jpg"
+  },
+  {
+    "index": 270,
+    "class": "Tomato___healthy",
+    "source_file": "ad2429eb-1ba6-4875-a779-310627fcaa91.jpg"
+  },
+  {
+    "index": 271,
+    "class": "Tomato___healthy",
+    "source_file": "bd325a08-8055-4699-93c3-f811ae022257.jpg"
+  },
+  {
+    "index": 272,
+    "class": "Tomato___healthy",
+    "source_file": "c360d625-1984-4a61-a2cf-7ffd9a656edc.jpg"
+  },
+  {
+    "index": 273,
+    "class": "Tomato___healthy",
+    "source_file": "c4bcff81-3082-42dc-970d-0c047ff6258b.jpg"
+  },
+  {
+    "index": 274,
+    "class": "Tomato___healthy",
+    "source_file": "c6d08052-c3e2-4000-b38b-c4c101bd530e.jpg"
+  },
+  {
+    "index": 275,
+    "class": "Tomato___healthy",
+    "source_file": "c74747fe-c0a2-4378-886a-d4ec0f819308.jpg"
+  },
+  {
+    "index": 276,
+    "class": "Tomato___healthy",
+    "source_file": "c85d37e0-18fc-4d82-ad01-1c5960b0b2c3.jpg"
+  },
+  {
+    "index": 277,
+    "class": "Tomato___healthy",
+    "source_file": "db53f8c4-a817-47cf-93eb-1155ce7647a3.jpg"
+  },
+  {
+    "index": 278,
+    "class": "Tomato___healthy",
+    "source_file": "df22006e-c967-4a07-9f22-d557dba1cb6d.jpg"
+  },
+  {
+    "index": 279,
+    "class": "Tomato___healthy",
+    "source_file": "e69ea1ae-2edf-4114-9454-94495aeed3bd.jpg"
+  },
+  {
+    "index": 280,
+    "class": "Tomato___healthy",
+    "source_file": "e720c6e7-5fb6-48b8-b6c6-2779e7823b5b.jpg"
+  },
+  {
+    "index": 281,
+    "class": "Tomato___healthy",
+    "source_file": "e9fef580-0bc8-4090-b2c7-56f9828875ba.jpg"
+  },
+  {
+    "index": 282,
+    "class": "Tomato___healthy",
+    "source_file": "f50bdc53-0fd6-4ae2-b073-69188771ebc2.jpg"
+  },
+  {
+    "index": 283,
+    "class": "Tomato___healthy",
+    "source_file": "f7b049a4-bb79-4907-aea7-be5703afc423.jpg"
+  },
+  {
+    "index": 284,
+    "class": "Tomato___healthy",
+    "source_file": "f8c746d8-df93-4abb-8863-c163f12e638b.jpg"
+  },
+  {
+    "index": 285,
+    "class": "Tomato___healthy",
+    "source_file": "h28.jpg"
+  },
+  {
+    "index": 286,
+    "class": "Tomato___healthy",
+    "source_file": "healthy_127.jpg"
+  },
+  {
+    "index": 287,
+    "class": "Tomato___healthy",
+    "source_file": "healthy_151.jpg"
+  },
+  {
+    "index": 288,
+    "class": "Tomato___healthy",
+    "source_file": "healthy_181.jpg"
+  },
+  {
+    "index": 289,
+    "class": "Tomato___healthy",
+    "source_file": "healthy_227.jpg"
+  },
+  {
+    "index": 290,
+    "class": "Tomato___healthy",
+    "source_file": "healthy_257.jpg"
+  },
+  {
+    "index": 291,
+    "class": "Tomato___healthy",
+    "source_file": "healthy_263.jpg"
+  },
+  {
+    "index": 292,
+    "class": "Tomato___healthy",
+    "source_file": "healthy_40.jpg"
+  },
+  {
+    "index": 293,
+    "class": "Tomato___healthy",
+    "source_file": "healthy_410.jpg"
+  },
+  {
+    "index": 294,
+    "class": "Tomato___healthy",
+    "source_file": "healthy_470.jpg"
+  },
+  {
+    "index": 295,
+    "class": "Tomato___healthy",
+    "source_file": "th130.jpg"
+  },
+  {
+    "index": 296,
+    "class": "Tomato___healthy",
+    "source_file": "th146.jpg"
+  },
+  {
+    "index": 297,
+    "class": "Tomato___healthy",
+    "source_file": "th156.jpg"
+  },
+  {
+    "index": 298,
+    "class": "Tomato___healthy",
+    "source_file": "th169.jpg"
+  },
+  {
+    "index": 299,
+    "class": "Tomato___healthy",
+    "source_file": "th247.jpg"
+  }
+]

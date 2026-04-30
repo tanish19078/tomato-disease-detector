@@ -52,3 +52,13 @@ npm-debug.log*
 
 # Gemini/Agent metadata
 .gemini/
+
+# Datasets and Archives
+dataset/
+data/
+*.zip
+*.tar.gz
+*.rar
+
+# Jupyter Notebooks
+.ipynb_checkpoints/
