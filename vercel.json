@@ -34,6 +34,14 @@
       "dest": "api/index.py"
     },
     {
+      "src": "^/similar",
+      "dest": "api/index.py"
+    },
+    {
+      "src": "^/advisor",
+      "dest": "api/index.py"
+    },
+    {
       "src": "/(.*)",
       "dest": "frontend/dist/$1"
     }

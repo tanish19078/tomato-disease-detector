@@ -42,6 +42,11 @@ function App() {
   const [showHeatmap, setShowHeatmap] = useState(false);
   const [isLoadingHeatmap, setIsLoadingHeatmap] = useState(false);
   const [history, setHistory] = useState([]);
+  const [similarCases, setSimilarCases] = useState(null);
+  const [isLoadingSimilar, setIsLoadingSimilar] = useState(false);
+  const [advisory, setAdvisory] = useState(null);
+  const [isLoadingAdvisory, setIsLoadingAdvisory] = useState(false);
+  const [userContext, setUserContext] = useState('');
   const fileRef = useRef(null);
 
   // Load history on mount
@@ -61,6 +66,8 @@ function App() {
     setHeatmapData(null);
     setShowHeatmap(false);
     setActiveTab('diagnosis');
+    setSimilarCases(null);
+    setAdvisory(null);
   }, []);
 
   const analyze = async () => {
@@ -96,8 +103,9 @@ function App() {
         return next;
       });
 
-      // Fetch heatmap in background
+      // Fetch heatmap + similar cases in background
       fetchHeatmap();
+      fetchSimilar();
     } catch (e) {
       setError(e.message);
     } finally {
@@ -124,6 +132,70 @@ function App() {
     }
   };
 
+  const fetchSimilar = async () => {
+    if (!selectedFile) return;
+    setIsLoadingSimilar(true);
+    const fd = new FormData();
+    fd.append('file', selectedFile);
+    try {
+      const res = await fetch(`${API_URL}/similar?top_k=3`, { method: 'POST', body: fd });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success) setSimilarCases(data.similar_cases);
+      }
+    } catch (e) {
+      console.warn('Similar cases fetch failed:', e);
+    } finally {
+      setIsLoadingSimilar(false);
+    }
+  };
+
+  const fetchAdvisory = async () => {
+    if (!results) return;
+    setIsLoadingAdvisory(true);
+    setAdvisory(null);
+    const params = new URLSearchParams({
+      disease_class: results.prediction_class,
+      confidence: results.confidence,
+      severity: results.severity,
+      models_agree: results.models_agree,
+      user_context: userContext,
+    });
+    try {
+      const res = await fetch(`${API_URL}/advisor?${params}`, { method: 'POST' });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success) setAdvisory(data.advisory);
+      } else {
+        const err = await res.json().catch(() => ({}));
+        console.warn('Advisor failed:', err.detail || res.status);
+      }
+    } catch (e) {
+      console.warn('Advisor fetch failed:', e);
+    } finally {
+      setIsLoadingAdvisory(false);
+    }
+  };
+
+  const renderMarkdown = (md) => {
+    if (!md) return null;
+    // Lightweight markdown renderer: headings, bold, lists, line breaks
+    return md.split('\n').map((line, i) => {
+      if (line.startsWith('## ')) return <h4 key={i} className="md-h2">{line.replace('## ', '')}</h4>;
+      if (line.startsWith('### ')) return <h5 key={i} className="md-h3">{line.replace('### ', '')}</h5>;
+      if (/^\d+\.\s/.test(line)) {
+        const text = line.replace(/^\d+\.\s/, '');
+        return <div key={i} className="md-list-item"><span className="md-num">{line.match(/^(\d+)/)[1]}.</span> <span dangerouslySetInnerHTML={{__html: text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')}} /></div>;
+      }
+      if (line.startsWith('- ')) {
+        const text = line.replace('- ', '');
+        return <div key={i} className="md-list-item"><span className="md-bullet">•</span> <span dangerouslySetInnerHTML={{__html: text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')}} /></div>;
+      }
+      if (line.trim() === '') return <div key={i} className="md-spacer" />;
+      return <p key={i} className="md-para" dangerouslySetInnerHTML={{__html: line.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')}} />;
+    });
+  };
+
   const clearAll = () => {
     setSelectedFile(null);
     setPreviewUrl(null);
@@ -131,6 +203,8 @@ function App() {
     setError(null);
     setHeatmapData(null);
     setShowHeatmap(false);
+    setSimilarCases(null);
+    setAdvisory(null);
   };
 
   const clearHistory = () => {
@@ -292,6 +366,45 @@ function App() {
               </div>
             </div>
           )}
+
+          {/* Similar Cases */}
+          {results && (isLoadingSimilar || similarCases) && (
+            <div className="similar-section fade-up">
+              <h3 className="section-title">
+                <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+                </svg>
+                Similar Reference Cases
+              </h3>
+              {isLoadingSimilar ? (
+                <div className="similar-loading">
+                  <div className="shimmer-card"></div>
+                  <div className="shimmer-card"></div>
+                  <div className="shimmer-card"></div>
+                </div>
+              ) : similarCases && similarCases.length > 0 ? (
+                <div className="similar-grid">
+                  {similarCases.map((c) => (
+                    <div key={c.rank} className={`similar-card ${c.class === results.prediction_class ? 'match' : 'diff'}`}>
+                      {c.thumbnail_base64 ? (
+                        <img src={`data:image/jpeg;base64,${c.thumbnail_base64}`} alt={c.label} className="similar-thumb" />
+                      ) : (
+                        <div className="similar-thumb-placeholder" />
+                      )}
+                      <div className="similar-info">
+                        <div className="similar-label">{c.label}</div>
+                        <div className="similar-score">
+                          <div className={`similarity-badge ${c.similarity >= 90 ? 'high' : c.similarity >= 70 ? 'med' : 'low'}`}>
+                            {c.similarity}% match
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : null}
+            </div>
+          )}
         </section>
 
         {/* Right Column — Clinical Report */}
@@ -310,7 +423,7 @@ function App() {
               <div className="report-content fade-in">
                 {/* Tabs */}
                 <div className="tabs">
-                  {[['diagnosis','Diagnosis'],['models','Models'],['details','Details']].map(([key, label]) => (
+                  {[['diagnosis','Diagnosis'],['models','Models'],['details','Details'],['advisor','AI Advisor']].map(([key, label]) => (
                     <button key={key} className={`tab-btn ${activeTab === key ? 'active' : ''}`} onClick={() => setActiveTab(key)}>
                       {label}
                     </button>
@@ -429,6 +542,63 @@ function App() {
                       </div>
                     )}
                   </>
+                )}
+
+                {/* Tab: AI Advisor */}
+                {activeTab === 'advisor' && (
+                  <div className="advisor-section cascade-in-1">
+                    <div className="advisor-intro">
+                      <div className="advisor-icon">
+                        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.455 2.456L21.75 6l-1.036.259a3.375 3.375 0 00-2.455 2.456zM16.894 20.567L16.5 21.75l-.394-1.183a2.25 2.25 0 00-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 001.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 001.423 1.423l1.183.394-1.183.394a2.25 2.25 0 00-1.423 1.423z" />
+                        </svg>
+                      </div>
+                      <div>
+                        <strong>Personalised AI Advisor</strong>
+                        <p>Get tailored treatment advice powered by Llama AI. Optionally describe your growing conditions for more specific guidance.</p>
+                      </div>
+                    </div>
+
+                    <textarea
+                      className="context-input"
+                      placeholder="Describe your growing conditions (optional)...&#10;e.g., outdoor garden, humid climate, organic farming, container plants"
+                      value={userContext}
+                      onChange={(e) => setUserContext(e.target.value)}
+                      rows={3}
+                    />
+
+                    <button
+                      className="advisor-btn"
+                      onClick={fetchAdvisory}
+                      disabled={isLoadingAdvisory}
+                    >
+                      {isLoadingAdvisory ? (
+                        <><span className="spinner"></span> Generating Advice...</>
+                      ) : (
+                        <>Get Personalised Advice <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z" /></svg></>
+                      )}
+                    </button>
+
+                    {isLoadingAdvisory && (
+                      <div className="advisory-skeleton">
+                        <div className="skeleton-line w80"></div>
+                        <div className="skeleton-line w60"></div>
+                        <div className="skeleton-line w90"></div>
+                        <div className="skeleton-line w70"></div>
+                        <div className="skeleton-line w85"></div>
+                      </div>
+                    )}
+
+                    {advisory && (
+                      <div className="advisory-content fade-up">
+                        <div className="advisory-badge">
+                          <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z" /></svg>
+                          Llama AI · Personalised
+                        </div>
+                        {renderMarkdown(advisory)}
+                      </div>
+                    )}
+                  </div>
                 )}
               </div>
             ) : (

@@ -4,12 +4,34 @@ import base64
 import logging
 import numpy as np
 from PIL import Image
-from fastapi import FastAPI, File, UploadFile, HTTPException, Query
+from fastapi import FastAPI, File, UploadFile, HTTPException, Query, Form
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 import onnxruntime as ort
 import os
 from contextlib import asynccontextmanager
+from pathlib import Path
+
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass  # dotenv not installed — env vars must be set manually
+
+try:
+    from groq import Groq
+    HAS_GROQ = True
+except ImportError:
+    HAS_GROQ = False
+    logger_init = logging.getLogger(__name__)
+    logger_init.warning("groq package not installed — /advisor endpoint disabled")
+
+try:
+    import onnx
+    from onnx import TensorProto, helper as onnx_helper
+    HAS_ONNX = True
+except ImportError:
+    HAS_ONNX = False
 
 # Initialize logging
 logging.basicConfig(level=logging.INFO, format="%(asctime)s | %(levelname)s | %(message)s")
@@ -167,6 +189,44 @@ MODEL_META = {
 sessions: dict[str, ort.InferenceSession] = {}
 mappings: dict[str, dict] = {}
 
+# ─── Groq / LLM State ──────────────────────────────────────────────────
+groq_client = None
+GROQ_MODEL = os.environ.get("GROQ_MODEL", "llama-3.3-70b-versatile")
+
+LLM_SYSTEM_PROMPT = """You are an expert agricultural pathologist specializing in tomato diseases.
+A farmer has just used an AI diagnostic tool to analyze their tomato leaf.
+Provide actionable, personalised treatment advice based on the diagnostic results.
+
+Structure your response EXACTLY as:
+
+## 🔍 Assessment
+Brief interpretation of the AI results (1-2 sentences).
+
+## 🚨 Immediate Actions
+What to do RIGHT NOW (numbered list, 2-3 items).
+
+## 💊 Treatment Plan
+Detailed treatment steps (numbered list, 3-5 items).
+
+## 🛡️ Prevention
+How to prevent recurrence (numbered list, 2-3 items).
+
+## ⚠️ When to Seek Expert Help
+Conditions under which professional consultation is needed (1-2 sentences).
+
+Rules:
+- Be specific to the detected disease, not generic.
+- If confidence is low or models disagree, mention diagnostic uncertainty.
+- If the user provides growing context, tailor advice to their situation.
+- Keep it concise but thorough. No filler."""
+
+# ─── Similarity Index State ─────────────────────────────────────────────
+SIMILARITY_DIR = Path("similarity")
+embedding_session: ort.InferenceSession | None = None
+embedding_output_name: str | None = None
+gallery_embeddings: np.ndarray | None = None
+gallery_manifest: list[dict] | None = None
+
 
 def load_model(key: str, meta: dict) -> bool:
     """Load an ONNX model and its class mapping. Returns True on success."""
@@ -194,13 +254,89 @@ def load_model(key: str, meta: dict) -> bool:
         return False
 
 
+def _setup_embedding_session():
+    """Create an ONNX session that outputs penultimate-layer embeddings from EfficientNet."""
+    global embedding_session, embedding_output_name
+
+    if not HAS_ONNX:
+        logger.warning("onnx package not installed — similarity embedding disabled")
+        return
+
+    efnet_path = MODEL_META["efnet"]["onnx_path"]
+    if not os.path.exists(efnet_path):
+        logger.warning("EfficientNet ONNX not found — similarity embedding disabled")
+        return
+
+    try:
+        model = onnx.load(efnet_path)
+        # Find the input to the last Gemm/MatMul node (the classifier head).
+        # Its input is the 1280-d avgpool embedding.
+        emb_name = None
+        for node in reversed(model.graph.node):
+            if node.op_type in ("Gemm", "MatMul"):
+                emb_name = node.input[0]
+                break
+
+        if not emb_name:
+            logger.warning("Could not locate embedding node in EfficientNet ONNX graph")
+            return
+
+        # Add the embedding tensor as an additional output
+        emb_output = onnx_helper.make_tensor_value_info(emb_name, TensorProto.FLOAT, None)
+        model.graph.output.append(emb_output)
+
+        model_bytes = model.SerializeToString()
+        embedding_session = ort.InferenceSession(model_bytes, providers=["CPUExecutionProvider"])
+        embedding_output_name = emb_name
+        logger.info(f"✓ Embedding session ready — output node: '{emb_name}'")
+    except Exception as e:
+        logger.error(f"✗ Failed to set up embedding session: {e}")
+
+
+def _load_similarity_index():
+    """Load pre-computed gallery embeddings and manifest."""
+    global gallery_embeddings, gallery_manifest
+
+    npz_path = SIMILARITY_DIR / "embeddings.npz"
+    manifest_path = SIMILARITY_DIR / "manifest.json"
+
+    if not npz_path.exists() or not manifest_path.exists():
+        logger.info("Similarity index not found — /similar endpoint will be unavailable")
+        return
+
+    try:
+        data = np.load(str(npz_path))
+        gallery_embeddings = data["embeddings"].astype(np.float32)  # [N, 1280]
+        with open(manifest_path, "r") as f:
+            gallery_manifest = json.load(f)
+        logger.info(f"✓ Similarity index loaded — {len(gallery_manifest)} reference images")
+    except Exception as e:
+        logger.error(f"✗ Failed to load similarity index: {e}")
+
+
 # ─── App Lifecycle ──────────────────────────────────────────────────────
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Modern lifespan handler (replaces deprecated on_event)."""
-    # Startup
+    global groq_client
+
+    # Startup — models
     for key, meta in MODEL_META.items():
         load_model(key, meta)
+
+    # Startup — Groq LLM
+    if HAS_GROQ:
+        api_key = os.environ.get("GROQ_API_KEY")
+        if api_key:
+            groq_client = Groq(api_key=api_key)
+            logger.info(f"✓ Groq client initialised — model: {GROQ_MODEL}")
+        else:
+            logger.warning("GROQ_API_KEY not set — /advisor endpoint disabled")
+
+    # Startup — embedding session for similarity
+    _setup_embedding_session()
+    _load_similarity_index()
+
     logger.info(f"Startup complete. Active models: {list(sessions.keys())}")
     yield
     # Shutdown
@@ -562,6 +698,137 @@ async def generate_heatmap(
     except Exception as e:
         logger.error(f"Heatmap generation failed: {e}")
         raise HTTPException(status_code=500, detail=f"Heatmap generation failed: {e}")
+
+
+# ─── Similarity Search ──────────────────────────────────────────────────
+def extract_embedding(input_tensor: np.ndarray) -> np.ndarray | None:
+    """Extract a 1280-d embedding from EfficientNet's penultimate layer."""
+    if embedding_session is None or embedding_output_name is None:
+        return None
+    input_name = embedding_session.get_inputs()[0].name
+    outputs = embedding_session.run(
+        [embedding_output_name], {input_name: input_tensor}
+    )
+    emb = outputs[0].flatten().astype(np.float32)
+    return emb
+
+
+def cosine_similarity_batch(query: np.ndarray, gallery: np.ndarray) -> np.ndarray:
+    """Compute cosine similarity between a single query and a gallery matrix."""
+    query_norm = query / (np.linalg.norm(query) + 1e-8)
+    gallery_norms = gallery / (np.linalg.norm(gallery, axis=1, keepdims=True) + 1e-8)
+    return gallery_norms @ query_norm  # [N]
+
+
+@app.post("/similar")
+async def find_similar(
+    file: UploadFile = File(...),
+    top_k: int = Query(3, ge=1, le=5),
+):
+    """Find the most visually similar reference images from the gallery."""
+    if gallery_embeddings is None or gallery_manifest is None:
+        raise HTTPException(
+            status_code=503,
+            detail="Similarity index not available. Run build_index.py to generate it.",
+        )
+    if embedding_session is None:
+        raise HTTPException(status_code=503, detail="Embedding extraction not available.")
+
+    img_bytes = await file.read()
+    if len(img_bytes) > 10 * 1024 * 1024:
+        raise HTTPException(status_code=400, detail="Image too large. Maximum size is 10MB.")
+
+    try:
+        input_tensor = preprocess_image(img_bytes)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Failed to process image: {e}")
+
+    emb = extract_embedding(input_tensor)
+    if emb is None:
+        raise HTTPException(status_code=500, detail="Embedding extraction failed.")
+
+    # Cosine similarity search
+    sims = cosine_similarity_batch(emb, gallery_embeddings)
+    top_indices = np.argsort(sims)[::-1][:top_k]
+
+    results = []
+    for rank, idx in enumerate(top_indices, 1):
+        entry = gallery_manifest[int(idx)]
+        cls = entry["class"]
+        info = DISEASE_INFO.get(cls, {})
+
+        # Load thumbnail if available
+        thumb_b64 = ""
+        thumb_path = SIMILARITY_DIR / "thumbnails" / f"{idx}.jpg"
+        if thumb_path.exists():
+            with open(thumb_path, "rb") as f:
+                thumb_b64 = base64.b64encode(f.read()).decode("utf-8")
+
+        results.append({
+            "rank": rank,
+            "class": cls,
+            "label": info.get("label", cls),
+            "similarity": round(float(sims[idx]) * 100, 1),
+            "thumbnail_base64": thumb_b64,
+        })
+
+    logger.info(f"Similarity search: top match = {results[0]['label']} ({results[0]['similarity']}%)")
+    return JSONResponse({"success": True, "similar_cases": results})
+
+
+# ─── LLM Advisor (Groq / Llama) ────────────────────────────────────────
+@app.post("/advisor")
+async def llm_advisor(
+    disease_class: str = Query(...),
+    confidence: float = Query(...),
+    severity: str = Query("Unknown"),
+    models_agree: bool = Query(True),
+    user_context: str = Query(""),
+):
+    """Generate personalised treatment advice using Llama via Groq."""
+    if groq_client is None:
+        raise HTTPException(
+            status_code=503,
+            detail="LLM advisor not configured. Set GROQ_API_KEY environment variable.",
+        )
+
+    info = DISEASE_INFO.get(disease_class, {})
+    label = info.get("label", disease_class)
+
+    # Build the user prompt with diagnostic context
+    user_prompt = f"""Diagnostic Results:
+- Disease Detected: {label}
+- Confidence: {confidence}%
+- Severity: {severity}
+- Model Consensus: {'All models agree' if models_agree else 'Models DISAGREE — prediction uncertain'}"""
+
+    if user_context.strip():
+        user_prompt += f"\n\nFarmer's Growing Context:\n{user_context.strip()}"
+    else:
+        user_prompt += "\n\n(No additional context provided by the farmer.)"
+
+    try:
+        completion = groq_client.chat.completions.create(
+            model=GROQ_MODEL,
+            messages=[
+                {"role": "system", "content": LLM_SYSTEM_PROMPT},
+                {"role": "user", "content": user_prompt},
+            ],
+            temperature=0.7,
+            max_tokens=1024,
+        )
+        advisory_text = completion.choices[0].message.content
+
+        logger.info(f"LLM advisor: generated advice for {label} ({GROQ_MODEL})")
+        return JSONResponse({
+            "success": True,
+            "advisory": advisory_text,
+            "model_used": GROQ_MODEL,
+            "disease": label,
+        })
+    except Exception as e:
+        logger.error(f"LLM advisor failed: {e}")
+        raise HTTPException(status_code=500, detail=f"LLM advisor request failed: {e}")
 
 
 if __name__ == "__main__":

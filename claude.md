@@ -11,7 +11,7 @@ This is a comprehensive tomato leaf disease classifier application consisting of
 ## Project Structure
 ```
 /
-├── master_api.py           # FastAPI main entrypoint. Handles prediction endpoints and ensemble logic.
+├── master_api.py           # FastAPI main entrypoint. Handles prediction, advisor, and similarity endpoints.
 ├── vercel.json             # Vercel routing & build configuration.
 ├── train-new/              # Retrained model artifacts (with augmentation fix)
 │   ├── efficient-net/      # EfficientNet-B0 model artifacts
@@ -26,6 +26,11 @@ This is a comprehensive tomato leaf disease classifier application consisting of
 │       ├── class_mapping_resnet.json              # Index→class mapping for ResNet
 │       ├── best_resnet50_tomato.pth               # PyTorch checkpoint
 │       └── resnet50_training_curves.png           # Training curve plot
+├── similarity/             # Similarity index for visual reference search
+│   ├── build_index.py      # Script to generate embeddings from dataset (run on Colab)
+│   ├── embeddings.npz      # Pre-computed embedding matrix [N, 1280] (generated)
+│   ├── manifest.json       # Index→class mapping for gallery (generated)
+│   └── thumbnails/         # 120×90 JPEG thumbnails for display (generated)
 ├── api/
 │   └── index.py            # Vercel serverless function (imports master_api.app)
 ├── frontend/               # Vite + React SPA
@@ -36,7 +41,7 @@ This is a comprehensive tomato leaf disease classifier application consisting of
 │       ├── main.jsx        # React root render
 │       ├── index.css       # Global reset
 │       ├── App.jsx         # Main application component
-│       ├── App.css         # All styling (dark glassmorphic theme)
+│       ├── App.css         # All styling (light theme with glassmorphic accents)
 │       └── assets/         # Static assets
 └── _training_ref/          # Fixed training scripts (reference only)
     ├── train_efficientnet_b0.py  # EfficientNet-B0 training script (with TransformSubset fix)
@@ -115,6 +120,12 @@ Added a `validate_leaf_image` function in `master_api.py` that analyzes color hi
 ### Confidence Threshold
 `master_api.py` includes a `CONFIDENCE_THRESHOLD = 60.0` — predictions below this threshold are flagged with `is_confident: false` in the response.
 
+### ✅ LLM Personalised Advisor (Groq / Llama)
+A new `POST /advisor` endpoint sends diagnostic context (disease, confidence, severity, model agreement, optional user growing context) to **Llama 3.3 70B** via **Groq** for fast, personalised treatment advice. The response is structured markdown with Assessment, Immediate Actions, Treatment Plan, Prevention, and When to Seek Help sections. Falls back gracefully if `GROQ_API_KEY` is not set.
+
+### ✅ Visual Similarity Index
+A new `POST /similar` endpoint extracts 1280-d CNN embeddings from EfficientNet-B0's penultimate layer and performs cosine similarity search against a pre-computed gallery of reference images. Returns top-K most similar reference cases with thumbnails and labels. Requires running `similarity/build_index.py` on Colab to generate the index.
+
 ---
 
 ## Backend (`master_api.py`)
@@ -127,6 +138,8 @@ Added a `validate_leaf_image` function in `master_api.py` that analyzes color hi
 | GET | `/models` | Model metadata (name, params, val accuracy, ONNX size). |
 | POST | `/predict?mode=<mode>` | Predict disease from uploaded image. |
 | POST | `/heatmap?model=<mode>` | Generates an occlusion-sensitivity heatmap (Base64 PNG overlay). |
+| POST | `/similar?top_k=3` | Find top-K visually similar reference cases from the gallery. |
+| POST | `/advisor?disease_class=...&confidence=...` | Generate personalised LLM treatment advice via Groq/Llama. |
 
 ### Prediction Modes
 - `ensemble` (default): Averages softmax probabilities from all loaded models, picks highest.
@@ -201,6 +214,8 @@ Contains 5 entries, each with:
 - Per-model diagnostic cards with confidence bars and distribution breakdowns
 - Clinical report panel with severity color-coding
 - Consensus/conflict banner when models agree/disagree
+- **Similar Reference Cases** — horizontal card strip showing top-3 visually similar images from the gallery (with match/diff border coloring)
+- **AI Advisor tab** — Llama-powered personalised treatment advice with optional growing-context textarea, shimmer loading skeleton, and rendered markdown output
 - Responsive layout (2-column above 1100px, single column below)
 
 ### API Connection
@@ -222,7 +237,11 @@ The frontend currently connects to `http://localhost:8000` (hardcoded in `App.js
 ### Important Notes
 - The ONNX model files (especially ResNet at ~94MB) are large. Vercel lambda size limit is 250MB.
 - `onnxruntime` CPUExecutionProvider is used (no GPU in serverless).
-- Model loading happens at startup via `@app.on_event("startup")`.
+- Model loading happens at startup via lifespan handler.
+- **Environment Variables** (Vercel Dashboard):
+  - `GROQ_API_KEY` — Required for the `/advisor` LLM endpoint
+  - `GROQ_MODEL` — Optional, defaults to `llama-3.3-70b-versatile`
+  - `VITE_API_URL` — Frontend API URL (set in Vercel for the frontend build)
 
 ---
 
@@ -241,6 +260,8 @@ The frontend currently connects to `http://localhost:8000` (hardcoded in `App.js
 - All interactive states (hover, focus, active) should include smooth transitions.
 - The app connects to the backend via `import.meta.env.VITE_API_URL` (with fallback to localhost).
 - Keep the responsive breakpoint at 1100px for the main grid layout.
+- The AI Advisor tab uses a purple/indigo gradient accent to distinguish LLM-powered features from the core green theme.
+- Similar Cases cards use green borders for matching predictions and amber for differing ones.
 
 ### Model Retraining Rules
 - Both models were retrained on Google Colab with T4 GPU using the **fixed** `TransformSubset` wrapper.
