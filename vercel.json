@@ -1,49 +1,29 @@
 {
   "version": 2,
-  "builds": [
+  "rewrites": [
     {
-      "src": "api/index.py",
-      "use": "@vercel/python",
-      "config": {
-        "maxLambdaSize": "250mb"
-      }
+      "source": "/api/(.*)",
+      "destination": "/api/index.py"
     },
     {
-      "src": "frontend/package.json",
-      "use": "@vercel/static-build",
-      "config": {
-        "distDir": "dist"
-      }
-    }
-  ],
-  "routes": [
-    {
-      "src": "/api/(.*)",
-      "dest": "api/index.py"
+      "source": "/predict",
+      "destination": "/api/index.py"
     },
     {
-      "src": "^/predict",
-      "dest": "api/index.py"
+      "source": "/models",
+      "destination": "/api/index.py"
     },
     {
-      "src": "^/models",
-      "dest": "api/index.py"
+      "source": "/heatmap",
+      "destination": "/api/index.py"
     },
     {
-      "src": "^/heatmap",
-      "dest": "api/index.py"
+      "source": "/similar",
+      "destination": "/api/index.py"
     },
     {
-      "src": "^/similar",
-      "dest": "api/index.py"
-    },
-    {
-      "src": "^/advisor",
-      "dest": "api/index.py"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "frontend/dist/$1"
+      "source": "/advisor",
+      "destination": "/api/index.py"
     }
   ]
 }
