@@ -8,7 +8,7 @@ WORKDIR /app
 
 # onnxruntime needs OpenMP runtime libraries in slim Python images.
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends libgomp1 \
+    && apt-get install -y --no-install-recommends ca-certificates libgomp1 \
     && rm -rf /var/lib/apt/lists/*
 
 COPY requirements.txt .

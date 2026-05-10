@@ -315,6 +315,55 @@ def _load_similarity_index():
 
 
 # ─── App Lifecycle ──────────────────────────────────────────────────────
+def build_fallback_advisory(
+    label: str,
+    info: dict,
+    confidence: float,
+    severity: str,
+    models_agree: bool,
+    user_context: str,
+) -> str:
+    """Create deterministic advisory markdown when the LLM provider is unavailable."""
+    uncertainty = ""
+    if confidence < CONFIDENCE_THRESHOLD or not models_agree:
+        uncertainty = (
+            " The AI result has some uncertainty, so confirm symptoms visually "
+            "before applying intensive treatment."
+        )
+
+    context_note = ""
+    if user_context.strip():
+        context_note = f"\n\nYour provided growing context was considered: {user_context.strip()}"
+
+    treatment = info.get("treatment") or ["Isolate affected plants and monitor symptoms closely."]
+    prevention = info.get("prevention") or ["Improve airflow, avoid wet foliage, and rotate crops."]
+    precautions = info.get("precautions") or ["Use treatments according to label instructions."]
+    immediate_actions = [
+        "Remove heavily affected leaves and dispose of them away from the garden.",
+        "Avoid overhead watering while symptoms are active.",
+        "Inspect nearby tomato plants for matching symptoms.",
+    ]
+
+    def numbered(items: list[str], limit: int | None = None) -> str:
+        selected = items[:limit] if limit else items
+        return "\n".join(f"{idx}. {item}" for idx, item in enumerate(selected, 1))
+
+    return f"""## Assessment
+The detected condition is **{label}** with {confidence}% confidence and **{severity}** severity.{uncertainty}{context_note}
+
+## Immediate Actions
+{numbered(immediate_actions, 3)}
+
+## Treatment Plan
+{numbered(treatment, 5)}
+
+## Prevention
+{numbered(prevention, 3)}
+
+## When to Seek Expert Help
+Seek local agricultural support if symptoms spread quickly, fruit or stems are affected, or plants continue declining after treatment. Also follow these precautions: {precautions[0]}"""
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Modern lifespan handler (replaces deprecated on_event)."""
@@ -786,14 +835,27 @@ async def llm_advisor(
     user_context: str = Query(""),
 ):
     """Generate personalised treatment advice using Llama via Groq."""
-    if groq_client is None:
-        raise HTTPException(
-            status_code=503,
-            detail="LLM advisor not configured. Set GROQ_API_KEY environment variable.",
-        )
-
     info = DISEASE_INFO.get(disease_class, {})
     label = info.get("label", disease_class)
+
+    fallback_advisory = build_fallback_advisory(
+        label=label,
+        info=info,
+        confidence=confidence,
+        severity=severity,
+        models_agree=models_agree,
+        user_context=user_context,
+    )
+
+    if groq_client is None:
+        logger.warning("LLM advisor not configured; returning local fallback advice")
+        return JSONResponse({
+            "success": True,
+            "advisory": fallback_advisory,
+            "model_used": "local-fallback",
+            "disease": label,
+            "fallback": True,
+        })
 
     # Build the user prompt with diagnostic context
     user_prompt = f"""Diagnostic Results:
@@ -828,7 +890,14 @@ async def llm_advisor(
         })
     except Exception as e:
         logger.error(f"LLM advisor failed: {e}")
-        raise HTTPException(status_code=500, detail=f"LLM advisor request failed: {e}")
+        return JSONResponse({
+            "success": True,
+            "advisory": fallback_advisory,
+            "model_used": "local-fallback",
+            "disease": label,
+            "fallback": True,
+            "provider_error": str(e),
+        })
 
 
 if __name__ == "__main__":
