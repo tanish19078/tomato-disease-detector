@@ -81,9 +81,14 @@ Create a new Hugging Face Space with **Docker** as the SDK, then push this repo 
 
 ```bash
 git lfs install
+git lfs track "train-new/**/*.onnx"
 git lfs track "train-new/**/*.onnx.data"
+git lfs track "similarity/*.npz"
 git add .gitattributes
+git add --renormalize train-new/efficient-net/tomato_disease_efficientnet.onnx
 git add --renormalize train-new/efficient-net/tomato_disease_efficientnet.onnx.data
+git add --renormalize train-new/resnet50/tomato_disease_resnet50.onnx
+git add --renormalize similarity/embeddings.npz
 git add -f train-new/efficient-net/tomato_disease_efficientnet.onnx.data
 git add -f train-new/resnet50/tomato_disease_resnet50.onnx.data
 git commit -m "Prepare backend for Hugging Face Spaces"
