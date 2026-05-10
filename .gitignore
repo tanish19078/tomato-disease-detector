@@ -13,8 +13,8 @@ dist/
 frontend/.env
 frontend/.env.local
 
-# ONNX model weights (too large for git — use Git LFS or download separately)
-*.onnx.data
+# Model checkpoints are not needed for inference deployment.
+# ONNX external weight files are tracked with Git LFS via .gitattributes.
 *.pth
 
 # Python

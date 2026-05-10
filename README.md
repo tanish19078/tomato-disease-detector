@@ -1,3 +1,13 @@
+---
+title: Tomato Disease Detector Backend
+emoji: 🐢
+colorFrom: red
+colorTo: blue
+sdk: docker
+app_port: 7860
+pinned: false
+---
+
 #  AgriTech — Tomato Disease Diagnostic Center
 
 AI-powered tomato leaf disease detection using an **entropy-weighted ensemble** of EfficientNet-B0 and ResNet-50, served via FastAPI with a modern React frontend.
@@ -26,7 +36,7 @@ Frontend (React + Vite)  →  FastAPI Backend  →  ONNX Runtime (CPU)
 | Frontend | React 19 + Vite 8 | Light theme, vanilla CSS, Outfit + Inter fonts |
 | Backend | FastAPI + ONNX Runtime | Ensemble inference, heatmap generation |
 | Models | EfficientNet-B0, ResNet-50 | ImageNet pretrained, fine-tuned on 13,829 tomato leaf images |
-| Deployment | Vercel | Serverless Python function + static frontend |
+| Deployment | Hugging Face Spaces + Vercel | Dockerized FastAPI backend on Spaces, static frontend on Vercel |
 
 ## Quick Start
 
@@ -63,9 +73,37 @@ Create `frontend/.env` for production:
 VITE_API_URL=https://your-backend-url.com
 ```
 
+## Deployment
+
+### Backend on Hugging Face Spaces
+
+Create a new Hugging Face Space with **Docker** as the SDK, then push this repo to the Space remote. The Space reads the YAML block at the top of this README and runs the backend on port `7860`.
+
+```bash
+git lfs install
+git lfs track "train-new/**/*.onnx.data"
+git add .gitattributes
+git add --renormalize train-new/efficient-net/tomato_disease_efficientnet.onnx.data
+git add -f train-new/efficient-net/tomato_disease_efficientnet.onnx.data
+git add -f train-new/resnet50/tomato_disease_resnet50.onnx.data
+git commit -m "Prepare backend for Hugging Face Spaces"
+git remote add space https://huggingface.co/spaces/tanish19/tomato-disease
+git push space main
+```
+
+Set `GROQ_API_KEY` and optionally `GROQ_MODEL` as Space secrets.
+
+### Frontend on Vercel
+
+Deploy the `frontend/` app on Vercel and set:
+
+```env
+VITE_API_URL=https://tanish19-tomato-disease.hf.space
+```
+
 ## Model Setup
 
-The ONNX model weight files (`.onnx.data`) are too large for Git. After cloning, download them and place in:
+The ONNX model weight files (`.onnx.data`) are tracked with Git LFS for Hugging Face Spaces. After cloning without LFS, download them and place in:
 
 ```
 train-new/
