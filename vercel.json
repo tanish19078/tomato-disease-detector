@@ -18,6 +18,10 @@
       "destination": "/api/index.py"
     },
     {
+      "source": "/gradcam",
+      "destination": "/api/index.py"
+    },
+    {
       "source": "/similar",
       "destination": "/api/index.py"
     },

@@ -7,6 +7,7 @@ AI-powered tomato leaf disease detection using an entropy-weighted ensemble of E
 - Multi-model ensemble with entropy-weighted averaging
 - Five tomato classes: Bacterial Spot, Early Blight, Late Blight, Septoria Leaf Spot, and Healthy
 - Saliency heatmaps using occlusion sensitivity
+- Grad-CAM-style overlays from final convolutional feature maps
 - Similar reference cases from a pre-computed visual index
 - Personalized advisor endpoint with Groq/Llama support and local fallback advice
 - Clinical report with symptoms, treatment, prevention, and precautions
@@ -126,6 +127,7 @@ git lfs pull
 | GET | `/models` | Model metadata |
 | POST | `/predict?mode=ensemble\|efnet\|resnet` | Disease prediction |
 | POST | `/heatmap?model=efnet\|resnet` | Occlusion heatmap |
+| POST | `/gradcam?model=efnet\|resnet` | Grad-CAM-style overlay |
 | POST | `/similar?top_k=3` | Similar reference cases |
 | POST | `/advisor` | Personalized treatment advice |
 

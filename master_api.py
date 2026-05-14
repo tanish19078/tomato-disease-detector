@@ -226,6 +226,9 @@ embedding_session: ort.InferenceSession | None = None
 embedding_output_name: str | None = None
 gallery_embeddings: np.ndarray | None = None
 gallery_manifest: list[dict] | None = None
+cam_sessions: dict[str, ort.InferenceSession] = {}
+cam_output_names: dict[str, str] = {}
+cam_classifier_weights: dict[str, np.ndarray] = {}
 
 
 def load_model(key: str, meta: dict) -> bool:
@@ -291,6 +294,112 @@ def _setup_embedding_session():
         logger.info(f"✓ Embedding session ready — output node: '{emb_name}'")
     except Exception as e:
         logger.error(f"✗ Failed to set up embedding session: {e}")
+
+
+def _shape_rank_and_channels(model: "onnx.ModelProto", tensor_name: str) -> tuple[int | None, int | None]:
+    """Return rank and channel count for a graph tensor when shape inference knows it."""
+    for value in list(model.graph.value_info) + list(model.graph.output) + list(model.graph.input):
+        if value.name != tensor_name:
+            continue
+        dims = value.type.tensor_type.shape.dim
+        rank = len(dims)
+        channels = None
+        if rank >= 2:
+            dim = dims[1]
+            if dim.HasField("dim_value"):
+                channels = int(dim.dim_value)
+        return rank, channels
+    return None, None
+
+
+def _initializer_array(model: "onnx.ModelProto", name: str) -> np.ndarray | None:
+    """Read an ONNX initializer into a numpy array."""
+    try:
+        from onnx import numpy_helper
+    except ImportError:
+        return None
+
+    for initializer in model.graph.initializer:
+        if initializer.name == name:
+            return numpy_helper.to_array(initializer)
+    return None
+
+
+def _setup_cam_session(key: str, meta: dict) -> bool:
+    """Create an ONNX session with the final convolutional map exposed for CAM overlays."""
+    if not HAS_ONNX:
+        logger.warning("onnx package not installed — Grad-CAM endpoint disabled")
+        return False
+
+    onnx_path = meta["onnx_path"]
+    if not os.path.exists(onnx_path):
+        logger.warning(f"Skipping Grad-CAM setup for '{key}' — ONNX file not found")
+        return False
+
+    try:
+        model = onnx.load(onnx_path)
+        try:
+            model = onnx.shape_inference.infer_shapes(model)
+        except Exception as shape_err:
+            logger.warning(f"Shape inference failed for '{key}' CAM setup: {shape_err}")
+
+        classifier_weight = None
+        classifier_features = None
+        for node in reversed(model.graph.node):
+            if node.op_type not in ("Gemm", "MatMul") or len(node.input) < 2:
+                continue
+
+            weight = _initializer_array(model, node.input[1])
+            if weight is None or weight.ndim != 2:
+                continue
+
+            if weight.shape[0] == len(ALL_CLASSES):
+                classifier_weight = weight.astype(np.float32)
+                classifier_features = int(weight.shape[1])
+                break
+            if weight.shape[1] == len(ALL_CLASSES):
+                classifier_weight = weight.T.astype(np.float32)
+                classifier_features = int(weight.shape[0])
+                break
+
+        if classifier_weight is None or classifier_features is None:
+            logger.warning(f"Could not locate classifier weights for '{key}' CAM setup")
+            return False
+
+        cam_tensor = None
+        for node in reversed(model.graph.node):
+            if node.op_type != "Conv" or not node.output:
+                continue
+            rank, channels = _shape_rank_and_channels(model, node.output[0])
+            if rank == 4 and channels == classifier_features:
+                cam_tensor = node.output[0]
+                break
+
+        if cam_tensor is None:
+            for node in reversed(model.graph.node):
+                if node.op_type == "Conv" and node.output:
+                    rank, _ = _shape_rank_and_channels(model, node.output[0])
+                    if rank == 4:
+                        cam_tensor = node.output[0]
+                        break
+
+        if cam_tensor is None:
+            logger.warning(f"Could not locate final convolution tensor for '{key}' CAM setup")
+            return False
+
+        model.graph.output.append(
+            onnx_helper.make_tensor_value_info(cam_tensor, TensorProto.FLOAT, None)
+        )
+        cam_sessions[key] = ort.InferenceSession(
+            model.SerializeToString(), providers=["CPUExecutionProvider"]
+        )
+        cam_output_names[key] = cam_tensor
+        cam_classifier_weights[key] = classifier_weight
+        logger.info(f"✓ Grad-CAM session ready for '{key}' — tensor: '{cam_tensor}'")
+        return True
+    except Exception as e:
+        logger.error(f"✗ Failed to set up Grad-CAM session for '{key}': {e}")
+        return False
 
 
 def _load_similarity_index():
@@ -385,12 +494,18 @@ async def lifespan(app: FastAPI):
     # Startup — embedding session for similarity
     _setup_embedding_session()
     _load_similarity_index()
+    for key, meta in MODEL_META.items():
+        if key in sessions:
+            _setup_cam_session(key, meta)
 
     logger.info(f"Startup complete. Active models: {list(sessions.keys())}")
     yield
     # Shutdown
     sessions.clear()
     mappings.clear()
+    cam_sessions.clear()
+    cam_output_names.clear()
+    cam_classifier_weights.clear()
     logger.info("Shutdown complete. Models unloaded.")
 
 
@@ -750,6 +865,85 @@ async def generate_heatmap(
 
 
 # ─── Similarity Search ──────────────────────────────────────────────────
+@app.post("/gradcam")
+async def generate_gradcam(
+    file: UploadFile = File(...),
+    model: str = Query("efnet", enum=["efnet", "resnet"]),
+):
+    """Generate a Grad-CAM-style class activation overlay from the final convolution map."""
+    if model not in cam_sessions:
+        raise HTTPException(status_code=503, detail=f"Grad-CAM is not available for '{model}'.")
+
+    img_bytes = await file.read()
+    if len(img_bytes) > 10 * 1024 * 1024:
+        raise HTTPException(status_code=400, detail="Image too large. Maximum size is 10MB.")
+
+    try:
+        input_tensor = preprocess_image(img_bytes)
+        sess = cam_sessions[model]
+        input_name = sess.get_inputs()[0].name
+        logits_name = sess.get_outputs()[0].name
+        cam_name = cam_output_names[model]
+
+        logits, activations = sess.run(
+            [logits_name, cam_name], {input_name: input_tensor}
+        )
+        probs = softmax(logits)[0]
+        predicted_class = int(np.argmax(probs))
+        confidence = float(probs[predicted_class])
+
+        feature_map = np.squeeze(activations, axis=0).astype(np.float32)
+        if feature_map.ndim != 3:
+            raise ValueError(f"Unexpected activation shape: {activations.shape}")
+
+        class_weights = cam_classifier_weights.get(model)
+        if class_weights is not None and class_weights.shape[1] == feature_map.shape[0]:
+            weights = class_weights[predicted_class].reshape((-1, 1, 1))
+            cam = np.sum(weights * feature_map, axis=0)
+        else:
+            logger.warning(
+                f"CAM channel mismatch for '{model}', using mean activation fallback"
+            )
+            cam = np.mean(feature_map, axis=0)
+
+        cam = np.maximum(cam, 0)
+        if float(cam.max()) > float(cam.min()):
+            cam = (cam - cam.min()) / (cam.max() - cam.min())
+        else:
+            cam = np.zeros_like(cam, dtype=np.float32)
+
+        cam_img = Image.fromarray((cam * 255).astype(np.uint8), mode="L")
+        cam_img = cam_img.resize((224, 224), Image.BILINEAR)
+        v = np.array(cam_img, dtype=np.float32) / 255.0
+
+        rgba = np.zeros((224, 224, 4), dtype=np.uint8)
+        rgba[:, :, 0] = np.where(v > 0.08, 255, 0).astype(np.uint8)
+        rgba[:, :, 1] = np.where(v > 0.08, ((1 - v) * 190).astype(np.uint8), 0)
+        rgba[:, :, 2] = np.where(v > 0.08, (40 * (1 - v)).astype(np.uint8), 0)
+        rgba[:, :, 3] = np.where(v > 0.08, (v * 190).astype(np.uint8), 0)
+
+        buffer = io.BytesIO()
+        Image.fromarray(rgba, mode="RGBA").save(buffer, format="PNG")
+        gradcam_b64 = base64.b64encode(buffer.getvalue()).decode("utf-8")
+
+        mapping = mappings[model]
+        predicted_label = mapping[str(predicted_class)]
+        logger.info(f"Grad-CAM generated for {predicted_label} via {model}")
+
+        return JSONResponse({
+            "success": True,
+            "gradcam_base64": gradcam_b64,
+            "heatmap_base64": gradcam_b64,
+            "model_used": model,
+            "method": "classifier-weighted-cam",
+            "predicted_class": predicted_label,
+            "baseline_confidence": round(confidence * 100, 2),
+        })
+    except Exception as e:
+        logger.error(f"Grad-CAM generation failed: {e}")
+        raise HTTPException(status_code=500, detail=f"Grad-CAM generation failed: {e}")
+
+
 def extract_embedding(input_tensor: np.ndarray) -> np.ndarray | None:
     """Extract a 1280-d embedding from EfficientNet's penultimate layer."""
     if embedding_session is None or embedding_output_name is None:

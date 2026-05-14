@@ -39,6 +39,7 @@ function App() {
   const [dragging, setDragging] = useState(false);
   const [activeTab, setActiveTab] = useState('diagnosis');
   const [heatmapData, setHeatmapData] = useState(null);
+  const [heatmapMethod, setHeatmapMethod] = useState(null);
   const [showHeatmap, setShowHeatmap] = useState(false);
   const [isLoadingHeatmap, setIsLoadingHeatmap] = useState(false);
   const [history, setHistory] = useState([]);
@@ -64,6 +65,7 @@ function App() {
     setResults(null);
     setError(null);
     setHeatmapData(null);
+    setHeatmapMethod(null);
     setShowHeatmap(false);
     setActiveTab('diagnosis');
     setSimilarCases(null);
@@ -76,6 +78,7 @@ function App() {
     setError(null);
     setResults(null);
     setHeatmapData(null);
+    setHeatmapMethod(null);
 
     const fd = new FormData();
     fd.append('file', selectedFile);
@@ -103,7 +106,7 @@ function App() {
         return next;
       });
 
-      // Fetch heatmap + similar cases in background
+      // Fetch Grad-CAM + similar cases in background
       fetchHeatmap();
       fetchSimilar();
     } catch (e) {
@@ -120,13 +123,16 @@ function App() {
     fd.append('file', selectedFile);
     const heatmapModel = mode === 'ensemble' ? 'efnet' : mode;
     try {
-      const res = await fetch(`${API_URL}/heatmap?model=${heatmapModel}`, { method: 'POST', body: fd });
+      const res = await fetch(`${API_URL}/gradcam?model=${heatmapModel}`, { method: 'POST', body: fd });
       if (res.ok) {
         const data = await res.json();
-        if (data.success) setHeatmapData(data.heatmap_base64);
+        if (data.success) {
+          setHeatmapData(data.gradcam_base64 || data.heatmap_base64);
+          setHeatmapMethod(data.method || 'gradcam');
+        }
       }
     } catch (e) {
-      console.warn('Heatmap fetch failed:', e);
+      console.warn('Grad-CAM fetch failed:', e);
     } finally {
       setIsLoadingHeatmap(false);
     }
@@ -202,6 +208,7 @@ function App() {
     setResults(null);
     setError(null);
     setHeatmapData(null);
+    setHeatmapMethod(null);
     setShowHeatmap(false);
     setSimilarCases(null);
     setAdvisory(null);
@@ -256,7 +263,7 @@ function App() {
                 <img src={previewUrl} className="preview-img" alt="Leaf sample" />
                 {showHeatmap && heatmapData && (
                   <div className="heatmap-overlay">
-                    <img src={`data:image/png;base64,${heatmapData}`} alt="Saliency heatmap" />
+                    <img src={`data:image/png;base64,${heatmapData}`} alt="Grad-CAM overlay" />
                   </div>
                 )}
                 <button className="reupload-btn" onClick={(e) => { e.stopPropagation(); fileRef.current?.click(); }}>
@@ -301,7 +308,7 @@ function App() {
             </div>
           </div>
 
-          {/* Heatmap Controls */}
+          {/* Grad-CAM Controls */}
           {results && (
             <div className="heatmap-controls fade-up">
               <div className="heatmap-label">
@@ -309,12 +316,15 @@ function App() {
                   <path strokeLinecap="round" strokeLinejoin="round" d="M15.362 5.214A8.252 8.252 0 0112 21 8.25 8.25 0 016.038 7.047 8.287 8.287 0 009 9.601a8.983 8.983 0 013.361-6.867 8.21 8.21 0 003 2.48z" />
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 18a3.75 3.75 0 00.495-7.468 5.99 5.99 0 00-1.925 3.547 5.975 5.975 0 01-2.133-1.001A3.75 3.75 0 0012 18z" />
                 </svg>
-                Saliency Heatmap
+                Grad-CAM Overlay
               </div>
               {isLoadingHeatmap ? (
                 <div className="heatmap-loading"><span className="spinner-dark"></span> Generating...</div>
               ) : heatmapData ? (
-                <div className={`toggle-switch ${showHeatmap ? 'active' : ''}`} onClick={() => setShowHeatmap(!showHeatmap)} />
+                <div className="heatmap-toggle-wrap">
+                  {heatmapMethod && <span className="heatmap-method">{heatmapMethod === 'classifier-weighted-cam' ? 'CAM' : heatmapMethod}</span>}
+                  <div className={`toggle-switch ${showHeatmap ? 'active' : ''}`} onClick={() => setShowHeatmap(!showHeatmap)} />
+                </div>
               ) : (
                 <span style={{fontSize: '0.75rem', color: 'var(--text-tertiary)'}}>Unavailable</span>
               )}

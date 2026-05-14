@@ -308,6 +308,18 @@ body {
   font-size: 0.75rem; color: var(--text-tertiary);
   display: flex; align-items: center; gap: 0.4rem;
 }
+.heatmap-toggle-wrap {
+  display: flex; align-items: center; gap: 0.625rem;
+}
+.heatmap-method {
+  padding: 0.2rem 0.45rem;
+  border-radius: var(--radius-full);
+  background: var(--amber-50);
+  color: var(--amber-600);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0;
+}
 
 /* Toggle switch */
 .toggle-switch {
@@ -865,4 +877,3 @@ body {
 .skeleton-line.w80 { width: 80%; }
 .skeleton-line.w85 { width: 85%; }
 .skeleton-line.w90 { width: 90%; }
-
