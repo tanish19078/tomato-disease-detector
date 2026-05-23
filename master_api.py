@@ -721,8 +721,12 @@ async def predict(
     if len(img_bytes) > 10 * 1024 * 1024:
         raise HTTPException(status_code=400, detail="Image too large. Maximum size is 10MB.")
 
-    # Validate that the image actually looks like a leaf
-    validation = validate_leaf_image(img_bytes)
+    # Validate that the image actually looks like a leaf. Keep image parsing
+    # errors as client-facing 400s instead of accidental 500s.
+    try:
+        validation = validate_leaf_image(img_bytes)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Failed to validate image: {e}")
 
     try:
         input_tensor = preprocess_image(img_bytes)

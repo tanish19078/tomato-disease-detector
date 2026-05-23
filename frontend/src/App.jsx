@@ -4,6 +4,7 @@ import './App.css';
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 const HISTORY_KEY = 'agritech_history';
 const MAX_HISTORY = 12;
+const SUPPORTED_IMAGE_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp']);
 
 const SHORT_NAMES = {
   'Tomato___Bacterial_spot': 'Bacterial Spot',
@@ -12,6 +13,15 @@ const SHORT_NAMES = {
   'Tomato___Septoria_leaf_spot': 'Septoria',
   'Tomato___healthy': 'Healthy',
 };
+
+async function getErrorMessage(res) {
+  try {
+    const data = await res.json();
+    if (typeof data.detail === 'string') return data.detail;
+    if (typeof data.message === 'string') return data.message;
+  } catch { /* ignore invalid/non-JSON error responses */ }
+  return `Server responded with ${res.status}`;
+}
 
 function createThumbnail(file) {
   return new Promise((resolve) => {
@@ -60,6 +70,10 @@ function App() {
 
   const handleFile = useCallback((file) => {
     if (!file) return;
+    if (!SUPPORTED_IMAGE_TYPES.has(file.type)) {
+      setError('Please upload a JPEG, PNG, or WebP image.');
+      return;
+    }
     setSelectedFile(file);
     setPreviewUrl(URL.createObjectURL(file));
     setResults(null);
@@ -85,7 +99,7 @@ function App() {
 
     try {
       const res = await fetch(`${API_URL}/predict?mode=${mode}`, { method: 'POST', body: fd });
-      if (!res.ok) throw new Error(`Server responded with ${res.status}`);
+      if (!res.ok) throw new Error(await getErrorMessage(res));
       const data = await res.json();
       setResults(data);
       setActiveTab('diagnosis');
@@ -284,7 +298,7 @@ function App() {
                 <div className="browse-btn fade-up" style={{animationDelay: '0.15s'}}>Select File</div>
               </div>
             )}
-            <input ref={fileRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={(e) => handleFile(e.target.files[0])} />
+            <input ref={fileRef} type="file" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" style={{ display: 'none' }} onChange={(e) => handleFile(e.target.files[0])} />
           </div>
 
           {/* Action Bar */}
