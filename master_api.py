@@ -2,6 +2,7 @@ import io
 import json
 import base64
 import logging
+import re
 import numpy as np
 from PIL import Image
 from fastapi import FastAPI, File, UploadFile, HTTPException, Query, Form
@@ -9,6 +10,8 @@ from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 import onnxruntime as ort
 import os
+import urllib.error
+import urllib.request
 from contextlib import asynccontextmanager
 from pathlib import Path
 
@@ -192,6 +195,9 @@ mappings: dict[str, dict] = {}
 # ─── Groq / LLM State ──────────────────────────────────────────────────
 groq_client = None
 GROQ_MODEL = os.environ.get("GROQ_MODEL", "llama-3.3-70b-versatile")
+GEMINI_MODEL = os.environ.get("GEMINI_MODEL", "gemini-2.5-flash")
+ANTHROPIC_MODEL = os.environ.get("ANTHROPIC_MODEL", "claude-3-5-sonnet-20241022")
+OPENAI_MODEL = os.environ.get("OPENAI_MODEL", "gpt-4o")
 
 LLM_SYSTEM_PROMPT = """You are an expert agricultural pathologist specializing in tomato diseases.
 A farmer has just used an AI diagnostic tool to analyze their tomato leaf.
@@ -219,6 +225,27 @@ Rules:
 - If confidence is low or models disagree, mention diagnostic uncertainty.
 - If the user provides growing context, tailor advice to their situation.
 - Keep it concise but thorough. No filler."""
+
+FARMER_REPORT_SYSTEM_PROMPT = """You are an agricultural expert writing for farmers.
+Use simple, practical language that a farmer can understand quickly.
+Do not assume climate, season, soil, irrigation, humidity, pesticide access, or farm environment unless the user explicitly provides it.
+
+Return exactly this format:
+
+Plant Disease: <disease name>
+
+Cause Of Disease
+<one short paragraph. Do not use bullets or numbering. Explain the cause in plain farmer language.>
+
+Recommendation
+<one short paragraph. Do not use bullets or numbering. Give practical next steps in plain farmer language.>
+
+Rules:
+- Cause Of Disease and Recommendation must be paragraphs, not bullet lists.
+- Keep each paragraph 2-4 short sentences.
+- Avoid technical jargon when a simple word works.
+- Do not add extra sections, markdown tables, emojis, or disclaimers.
+- Mention uncertainty only if confidence is low or models disagree."""
 
 # ─── Similarity Index State ─────────────────────────────────────────────
 SIMILARITY_DIR = Path("similarity")
@@ -424,6 +451,295 @@ def _load_similarity_index():
 
 
 # ─── App Lifecycle ──────────────────────────────────────────────────────
+DISEASE_CAUSES = {
+    "Bacterial Spot": (
+        "Bacterial spot is caused by bacteria that infect tomato leaves through small wounds "
+        "or natural openings. It can spread from infected seed, plant debris, splashing water, "
+        "or contaminated tools."
+    ),
+    "Early Blight": (
+        "Early blight is caused by a fungus that attacks older tomato leaves first. It survives "
+        "on infected plant debris and spreads when spores land on leaf tissue."
+    ),
+    "Late Blight": (
+        "Late blight is caused by a fast-spreading water mold that damages tomato leaves and stems. "
+        "It spreads through airborne spores and infected plant material."
+    ),
+    "Septoria Leaf Spot": (
+        "Septoria leaf spot is caused by a fungus that mainly infects tomato leaves. It often starts "
+        "on lower leaves and can spread from infected debris or splashing water."
+    ),
+    "Healthy": (
+        "The leaf does not show clear disease signs in the current image. Continue normal care and "
+        "watch for new spots, yellowing, or wilting."
+    ),
+}
+
+
+def post_json(url: str, payload: dict, headers: dict, timeout: int = 45) -> dict:
+    """POST JSON using the standard library so provider SDKs are optional."""
+    body = json.dumps(payload).encode("utf-8")
+    request = urllib.request.Request(url, data=body, headers=headers, method="POST")
+    try:
+        with urllib.request.urlopen(request, timeout=timeout) as response:
+            return json.loads(response.read().decode("utf-8"))
+    except urllib.error.HTTPError as e:
+        detail = e.read().decode("utf-8", errors="replace")
+        raise RuntimeError(f"{e.code} {e.reason}: {detail}") from e
+
+
+def build_farmer_report_prompt(
+    label: str,
+    disease_class: str,
+    confidence: float,
+    severity: str,
+    models_agree: bool,
+    info: dict,
+    user_context: str,
+) -> str:
+    symptoms = "; ".join(info.get("symptoms", [])) or "No symptom list is available."
+    treatments = "; ".join(info.get("treatment", [])) or "Remove badly affected leaves and monitor the plant."
+    prevention = "; ".join(info.get("prevention", [])) or "Improve airflow and avoid wet leaves."
+
+    prompt = f"""Create a farmer-friendly tomato disease report.
+
+Diagnostic details:
+Disease class: {disease_class}
+Disease name: {label}
+Confidence: {confidence}%
+Severity: {severity}
+Model agreement: {'models agree' if models_agree else 'models do not agree'}
+Known symptoms: {symptoms}
+Known treatment options: {treatments}
+Known prevention options: {prevention}
+General cause reference: {DISEASE_CAUSES.get(label, 'Use the disease name and symptoms to explain the likely cause simply.')}"""
+
+    if user_context.strip():
+        prompt += f"\nFarmer context: {user_context.strip()}"
+    else:
+        prompt += "\nFarmer context: Not provided. Do not assume any environment."
+
+    return prompt
+
+
+def build_local_farmer_report(
+    label: str,
+    info: dict,
+    confidence: float,
+    models_agree: bool,
+) -> str:
+    """Local report fallback with the same no-bullet farmer format."""
+    cause = DISEASE_CAUSES.get(
+        label,
+        "This disease is usually caused by a plant pathogen that spreads through infected leaves, plant debris, or contaminated material.",
+    )
+    treatment = info.get("treatment") or ["Remove badly affected leaves and monitor the plant closely."]
+    prevention = info.get("prevention") or ["Keep leaves dry, improve airflow, and remove infected plant debris."]
+    uncertainty = ""
+    if confidence < CONFIDENCE_THRESHOLD or not models_agree:
+        uncertainty = " The AI result has some uncertainty, so confirm the visible symptoms before strong treatment."
+
+    recommendation = " ".join((treatment[:2] + prevention[:1])[:3])
+    return f"""Plant Disease: {label}
+
+Cause Of Disease
+{cause}{uncertainty}
+
+Recommendation
+{recommendation} Follow label instructions when using any spray, and remove infected plant debris away from healthy plants."""
+
+
+def call_gemini_report(prompt: str) -> str:
+    api_key = os.environ.get("GEMINI_API_KEY")
+    if not api_key:
+        raise RuntimeError("GEMINI_API_KEY is not configured")
+
+    model_path = GEMINI_MODEL if GEMINI_MODEL.startswith("models/") else f"models/{GEMINI_MODEL}"
+    url = f"https://generativelanguage.googleapis.com/v1beta/{model_path}:generateContent?key={api_key}"
+    data = post_json(
+        url,
+        {
+            "systemInstruction": {"parts": [{"text": FARMER_REPORT_SYSTEM_PROMPT}]},
+            "contents": [{"role": "user", "parts": [{"text": prompt}]}],
+            "generationConfig": {"temperature": 0.35, "maxOutputTokens": 500},
+        },
+        {"Content-Type": "application/json"},
+    )
+    parts = data.get("candidates", [{}])[0].get("content", {}).get("parts", [])
+    text = "\n".join(part.get("text", "") for part in parts).strip()
+    if not text:
+        raise RuntimeError("Gemini returned an empty report")
+    return text
+
+
+def call_claude_report(prompt: str) -> str:
+    api_key = os.environ.get("ANTHROPIC_API_KEY")
+    if not api_key:
+        raise RuntimeError("ANTHROPIC_API_KEY is not configured")
+
+    data = post_json(
+        "https://api.anthropic.com/v1/messages",
+        {
+            "model": ANTHROPIC_MODEL,
+            "max_tokens": 500,
+            "temperature": 0.35,
+            "system": FARMER_REPORT_SYSTEM_PROMPT,
+            "messages": [{"role": "user", "content": prompt}],
+        },
+        {
+            "Content-Type": "application/json",
+            "x-api-key": api_key,
+            "anthropic-version": "2023-06-01",
+        },
+    )
+    blocks = data.get("content", [])
+    text = "\n".join(block.get("text", "") for block in blocks if block.get("type") == "text").strip()
+    if not text:
+        raise RuntimeError("Claude returned an empty report")
+    return text
+
+
+def call_openai_report(prompt: str) -> str:
+    api_key = os.environ.get("OPENAI_API_KEY")
+    if not api_key:
+        raise RuntimeError("OPENAI_API_KEY is not configured")
+
+    data = post_json(
+        "https://api.openai.com/v1/responses",
+        {
+            "model": OPENAI_MODEL,
+            "instructions": FARMER_REPORT_SYSTEM_PROMPT,
+            "input": prompt,
+            "temperature": 0.35,
+            "max_output_tokens": 500,
+        },
+        {
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {api_key}",
+        },
+    )
+    if data.get("output_text"):
+        return data["output_text"].strip()
+
+    pieces: list[str] = []
+    for item in data.get("output", []):
+        for content in item.get("content", []):
+            if content.get("type") in ("output_text", "text"):
+                pieces.append(content.get("text", ""))
+    text = "\n".join(pieces).strip()
+    if not text:
+        raise RuntimeError("GPT-4o returned an empty report")
+    return text
+
+
+REPORT_PROVIDERS = {
+    "gemini": ("Gemini Version", GEMINI_MODEL, call_gemini_report),
+    "claude": ("Claude Version", ANTHROPIC_MODEL, call_claude_report),
+    "openai": ("GPT-4o Version", OPENAI_MODEL, call_openai_report),
+}
+
+
+def requested_report_providers(provider: str) -> list[str]:
+    normalized = provider.strip().lower()
+    aliases = {
+        "gpt": "openai",
+        "gpt4o": "openai",
+        "gpt-4o": "openai",
+    }
+    normalized = aliases.get(normalized, normalized)
+    if normalized == "all":
+        return ["gemini", "claude", "openai"]
+    if normalized in REPORT_PROVIDERS:
+        return [normalized]
+    return ["gemini", "claude", "openai"]
+
+
+def generate_farmer_report_versions(
+    provider: str,
+    prompt: str,
+    fallback_report: str,
+) -> tuple[str, dict]:
+    versions: dict[str, dict] = {}
+    sections: list[str] = []
+    for key in requested_report_providers(provider):
+        section_title, model_name, generator = REPORT_PROVIDERS[key]
+        try:
+            text = generator(prompt)
+            versions[key] = {
+                "label": section_title,
+                "model": model_name,
+                "text": text,
+                "fallback": False,
+            }
+        except Exception as e:
+            logger.warning(f"{section_title} report failed: {e}")
+            text = fallback_report
+            versions[key] = {
+                "label": section_title,
+                "model": "local-fallback",
+                "text": text,
+                "fallback": True,
+                "provider_error": str(e),
+            }
+        sections.append(f"## {section_title}\n{text}")
+
+    return "\n\n".join(sections), versions
+
+
+def tokenize_report_text(text: str) -> list[str]:
+    """Normalize report text into simple word tokens for provider comparison."""
+    return re.findall(r"[a-z0-9]+", text.lower())
+
+
+def text_cosine_similarity(left: str, right: str) -> float:
+    left_tokens = tokenize_report_text(left)
+    right_tokens = tokenize_report_text(right)
+    if not left_tokens or not right_tokens:
+        return 0.0
+
+    left_counts: dict[str, int] = {}
+    right_counts: dict[str, int] = {}
+    for token in left_tokens:
+        left_counts[token] = left_counts.get(token, 0) + 1
+    for token in right_tokens:
+        right_counts[token] = right_counts.get(token, 0) + 1
+
+    vocab = set(left_counts) | set(right_counts)
+    dot = sum(left_counts.get(token, 0) * right_counts.get(token, 0) for token in vocab)
+    left_norm = float(sum(value * value for value in left_counts.values())) ** 0.5
+    right_norm = float(sum(value * value for value in right_counts.values())) ** 0.5
+    if left_norm == 0 or right_norm == 0:
+        return 0.0
+    return round((dot / (left_norm * right_norm)) * 100, 1)
+
+
+def build_report_similarity_matrix(versions: dict) -> dict:
+    """Build a provider-to-provider report similarity matrix."""
+    provider_keys = [key for key in ("gemini", "claude", "openai") if key in versions]
+    labels = [versions[key]["label"].replace(" Version", "") for key in provider_keys]
+
+    matrix: list[list[float]] = []
+    for left_key in provider_keys:
+        row: list[float] = []
+        for right_key in provider_keys:
+            if left_key == right_key:
+                row.append(100.0)
+            else:
+                row.append(
+                    text_cosine_similarity(
+                        versions[left_key].get("text", ""),
+                        versions[right_key].get("text", ""),
+                    )
+                )
+        matrix.append(row)
+
+    return {
+        "metric": "word_cosine_similarity_percent",
+        "labels": labels,
+        "matrix": matrix,
+    }
+
+
 def build_fallback_advisory(
     label: str,
     info: dict,
@@ -1031,10 +1347,45 @@ async def llm_advisor(
     severity: str = Query("Unknown"),
     models_agree: bool = Query(True),
     user_context: str = Query(""),
+    provider: str = Query("groq"),
+    style: str = Query("advisor"),
 ):
-    """Generate personalised treatment advice using Llama via Groq."""
+    """Generate personalised treatment advice or farmer report text."""
     info = DISEASE_INFO.get(disease_class, {})
     label = info.get("label", disease_class)
+
+    if style == "farmer_report":
+        fallback_report = build_local_farmer_report(
+            label=label,
+            info=info,
+            confidence=confidence,
+            models_agree=models_agree,
+        )
+        report_prompt = build_farmer_report_prompt(
+            label=label,
+            disease_class=disease_class,
+            confidence=confidence,
+            severity=severity,
+            models_agree=models_agree,
+            info=info,
+            user_context=user_context,
+        )
+        advisory_text, versions = generate_farmer_report_versions(
+            provider=provider,
+            prompt=report_prompt,
+            fallback_report=fallback_report,
+        )
+        similarity_matrix = build_report_similarity_matrix(versions)
+        return JSONResponse({
+            "success": True,
+            "advisory": advisory_text,
+            "versions": versions,
+            "similarity_matrix": similarity_matrix,
+            "model_used": provider,
+            "disease": label,
+            "style": "farmer_report",
+            "fallback": any(version.get("fallback") for version in versions.values()),
+        })
 
     fallback_advisory = build_fallback_advisory(
         label=label,

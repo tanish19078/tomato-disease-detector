@@ -5,6 +5,12 @@ const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 const HISTORY_KEY = 'agritech_history';
 const MAX_HISTORY = 12;
 const SUPPORTED_IMAGE_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp']);
+const REPORT_CASES = [
+  { id: 'bacterial_spot', label: 'Bacterial Spot', src: '/report-cases/bacterial_spot.jpeg' },
+  { id: 'early_blight', label: 'Early Blight', src: '/report-cases/early_blight.jpeg' },
+  { id: 'late_blight', label: 'Late Blight', src: '/report-cases/late_blight.jpeg' },
+  { id: 'septoria_leaf_spot', label: 'Septoria Leaf Spot', src: '/report-cases/septoria_leaf_spot.jpeg' },
+];
 
 const SHORT_NAMES = {
   'Tomato___Bacterial_spot': 'Bacterial Spot',
@@ -56,6 +62,8 @@ function App() {
   const [similarCases, setSimilarCases] = useState(null);
   const [isLoadingSimilar, setIsLoadingSimilar] = useState(false);
   const [advisory, setAdvisory] = useState(null);
+  const [advisoryVersions, setAdvisoryVersions] = useState(null);
+  const [reportSimilarity, setReportSimilarity] = useState(null);
   const [isLoadingAdvisory, setIsLoadingAdvisory] = useState(false);
   const [userContext, setUserContext] = useState('');
   const fileRef = useRef(null);
@@ -84,7 +92,21 @@ function App() {
     setActiveTab('diagnosis');
     setSimilarCases(null);
     setAdvisory(null);
+    setAdvisoryVersions(null);
+    setReportSimilarity(null);
   }, []);
+
+  const loadReportCase = useCallback(async (reportCase) => {
+    try {
+      const res = await fetch(reportCase.src);
+      if (!res.ok) throw new Error(`Could not load ${reportCase.label}`);
+      const blob = await res.blob();
+      const file = new File([blob], `${reportCase.id}.jpeg`, { type: 'image/jpeg' });
+      handleFile(file);
+    } catch (e) {
+      setError(e.message);
+    }
+  }, [handleFile]);
 
   const analyze = async () => {
     if (!selectedFile) return;
@@ -174,18 +196,26 @@ function App() {
     if (!results) return;
     setIsLoadingAdvisory(true);
     setAdvisory(null);
+    setAdvisoryVersions(null);
+    setReportSimilarity(null);
     const params = new URLSearchParams({
       disease_class: results.prediction_class,
       confidence: results.confidence,
       severity: results.severity,
       models_agree: results.models_agree,
       user_context: userContext,
+      provider: 'all',
+      style: 'farmer_report',
     });
     try {
       const res = await fetch(`${API_URL}/advisor?${params}`, { method: 'POST' });
       if (res.ok) {
         const data = await res.json();
-        if (data.success) setAdvisory(data.advisory);
+        if (data.success) {
+          setAdvisory(data.advisory);
+          setAdvisoryVersions(data.versions || null);
+          setReportSimilarity(data.similarity_matrix || null);
+        }
       } else {
         const err = await res.json().catch(() => ({}));
         console.warn('Advisor failed:', err.detail || res.status);
@@ -216,6 +246,40 @@ function App() {
     });
   };
 
+  const renderReportMatrix = () => {
+    if (!reportSimilarity?.labels?.length || !reportSimilarity?.matrix?.length) return null;
+    return (
+      <div className="report-matrix">
+        <div className="report-matrix-header">
+          <strong>Report Similarity Matrix</strong>
+          <span>Cosine similarity between generated report texts</span>
+        </div>
+        <div className="matrix-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th>Model</th>
+                {reportSimilarity.labels.map((label) => <th key={label}>{label}</th>)}
+              </tr>
+            </thead>
+            <tbody>
+              {reportSimilarity.labels.map((label, rowIdx) => (
+                <tr key={label}>
+                  <th>{label}</th>
+                  {reportSimilarity.matrix[rowIdx].map((score, colIdx) => (
+                    <td key={`${label}-${colIdx}`} className={rowIdx === colIdx ? 'self' : ''}>
+                      {score}%
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    );
+  };
+
   const clearAll = () => {
     setSelectedFile(null);
     setPreviewUrl(null);
@@ -226,6 +290,8 @@ function App() {
     setShowHeatmap(false);
     setSimilarCases(null);
     setAdvisory(null);
+    setAdvisoryVersions(null);
+    setReportSimilarity(null);
   };
 
   const clearHistory = () => {
@@ -319,6 +385,23 @@ function App() {
                   <>Analyze <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" /></svg></>
                 )}
               </button>
+            </div>
+          </div>
+
+          <div className="report-case-section fade-up">
+            <div className="section-title">Report Cases</div>
+            <div className="report-case-grid">
+              {REPORT_CASES.map((reportCase) => (
+                <button
+                  key={reportCase.id}
+                  className="report-case-card"
+                  onClick={() => loadReportCase(reportCase)}
+                  type="button"
+                >
+                  <img src={reportCase.src} alt={reportCase.label} />
+                  <span>{reportCase.label}</span>
+                </button>
+              ))}
             </div>
           </div>
 
@@ -578,14 +661,14 @@ function App() {
                         </svg>
                       </div>
                       <div>
-                        <strong>Personalised AI Advisor</strong>
-                        <p>Get tailored treatment advice powered by Llama AI. Optionally describe your growing conditions for more specific guidance.</p>
+                        <strong>Farmer Report Comparison</strong>
+                        <p>Generate simple farmer-facing reports from Gemini, Claude, and GPT-4o, then compare their text similarity.</p>
                       </div>
                     </div>
 
                     <textarea
                       className="context-input"
-                      placeholder="Describe your growing conditions (optional)...&#10;e.g., outdoor garden, humid climate, organic farming, container plants"
+                      placeholder="Optional context for the report...&#10;e.g., greenhouse crop, outdoor garden, organic farming"
                       value={userContext}
                       onChange={(e) => setUserContext(e.target.value)}
                       rows={3}
@@ -597,9 +680,9 @@ function App() {
                       disabled={isLoadingAdvisory}
                     >
                       {isLoadingAdvisory ? (
-                        <><span className="spinner"></span> Generating Advice...</>
+                        <><span className="spinner"></span> Generating Reports...</>
                       ) : (
-                        <>Get Personalised Advice <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z" /></svg></>
+                        <>Generate Report Versions <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z" /></svg></>
                       )}
                     </button>
 
@@ -617,9 +700,19 @@ function App() {
                       <div className="advisory-content fade-up">
                         <div className="advisory-badge">
                           <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z" /></svg>
-                          Llama AI · Personalised
+                          Gemini · Claude · GPT-4o
                         </div>
+                        {advisoryVersions && (
+                          <div className="provider-status-row">
+                            {Object.entries(advisoryVersions).map(([key, version]) => (
+                              <span key={key} className={`provider-chip ${version.fallback ? 'fallback' : 'live'}`}>
+                                {version.label.replace(' Version', '')}: {version.fallback ? 'Fallback' : 'Live'}
+                              </span>
+                            ))}
+                          </div>
+                        )}
                         {renderMarkdown(advisory)}
+                        {renderReportMatrix()}
                       </div>
                     )}
                   </div>

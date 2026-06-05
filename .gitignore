@@ -60,5 +60,9 @@ data/
 *.tar.gz
 *.rar
 
+# Stable Diffusion generated images
+stdif/generated/
+stdif/tomato_sd21_generated.zip
+
 # Jupyter Notebooks
 .ipynb_checkpoints/

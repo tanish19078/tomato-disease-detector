@@ -64,6 +64,12 @@ Backend:
 ```env
 GROQ_API_KEY=your_groq_key
 GROQ_MODEL=llama-3.3-70b-versatile
+GEMINI_API_KEY=your_gemini_key
+GEMINI_MODEL=gemini-2.5-flash
+ANTHROPIC_API_KEY=your_anthropic_key
+ANTHROPIC_MODEL=claude-3-5-sonnet-20241022
+OPENAI_API_KEY=your_openai_key
+OPENAI_MODEL=gpt-4o
 ```
 
 Frontend:
@@ -130,6 +136,16 @@ git lfs pull
 | POST | `/gradcam?model=efnet\|resnet` | Grad-CAM-style overlay |
 | POST | `/similar?top_k=3` | Similar reference cases |
 | POST | `/advisor` | Personalized treatment advice |
+| POST | `/advisor?provider=all&style=farmer_report` | Gemini, Claude, and GPT-4o farmer report versions plus text similarity matrix |
+
+The frontend also includes four built-in report cases under `frontend/public/report-cases/`:
+
+- Bacterial Spot
+- Early Blight
+- Late Blight
+- Septoria Leaf Spot
+
+Healthy is intentionally excluded from this report comparison set.
 
 ## Training Summary
 
