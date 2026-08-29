@@ -1,0 +1,25 @@
+{
+  "model_used": "claude-opus-4-1-20250805",
+  "reports": {
+    "bacterial_spot": {
+      "plant_disease": "Tomato Bacterial Spot",
+      "cause_of_disease": "This disease is caused by tiny bacteria that get into the leaves through small cuts or natural pores. You can see small dark wet-looking spots, often with yellow rings around them. The bacteria spread easily through infected seed, splashing water, leftover plant waste, and dirty tools.",
+      "recommendation": "Pick off and throw away the infected leaves and try not to wet the leaves when you water. Use clean, certified seed and wipe down your tools so they do not carry the bacteria from plant to plant. If you choose to spray a copper-based product, follow the label directions carefully."
+    },
+    "early_blight": {
+      "plant_disease": "Tomato Early Blight",
+      "cause_of_disease": "This disease comes from a fungus that lives in old plant waste left in the field. It usually shows up first on the older, lower leaves as brown circular spots with ring patterns like a target. Over time the spots spread upward and the leaves turn yellow.",
+      "recommendation": "Remove the affected lower leaves and keep the leaves as dry as you can. Give the plants more room and good airflow, and add mulch to stop soil from splashing onto the leaves. When the disease is spreading fast, use a suitable fungicide as directed."
+    },
+    "late_blight": {
+      "plant_disease": "Tomato Late Blight",
+      "cause_of_disease": "This is a serious disease caused by a fast-moving water mold. It shows up as large irregular brown patches and wet-looking damage that can spread very quickly. The spores travel by wind and through infected plant material, so it can move from plant to plant in a short time.",
+      "recommendation": "Act quickly by removing badly infected leaves or whole plants, and do not put this material in your compost. Keep the leaves dry and separate sick plants from healthy ones to slow the spread. Ask a local expert about preventive fungicide use to protect the rest of your crop."
+    },
+    "septoria_leaf_spot": {
+      "plant_disease": "Tomato Septoria Leaf Spot",
+      "cause_of_disease": "This disease is caused by a fungus that mostly attacks the leaves. It usually starts near the bottom of the plant as many small round gray-brown spots with dark edges. It spreads through rain splash, watering splash, and old infected plant waste.",
+      "recommendation": "Take off the infected lower leaves and avoid wetting the foliage when you water. Improve airflow around the plants and clean up old plant waste from the ground. If the spots keep spreading, use a labeled fungicide for protection."
+    }
+  }
+}
