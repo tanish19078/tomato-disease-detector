@@ -992,6 +992,106 @@ def validate_leaf_image(img_bytes: bytes) -> dict:
     }
 
 
+def calculate_leaf_coverage(img_bytes: bytes) -> float:
+    """
+    Measure diseased leaf-area coverage (lesions / spots) from a leaf image.
+    Uses GrabCut/colour segmentation and chromatic/chlorosis/necrosis lesion filtering.
+    Returns percentage (0.0 - 100.0, 1 dp).
+    """
+    try:
+        import cv2
+        from scipy import ndimage
+
+        nparr = np.frombuffer(img_bytes, np.uint8)
+        bgr = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+        if bgr is None:
+            return 0.0
+
+        h, w = bgr.shape[:2]
+        max_side = 480
+        if max(h, w) > max_side:
+            s = max_side / max(h, w)
+            bgr = cv2.resize(bgr, (int(w * s), int(h * s)), interpolation=cv2.INTER_AREA)
+            h, w = bgr.shape[:2]
+
+        # 1. Leaf mask segmentation (GrabCut seeded with bbox, fallback to colour)
+        gc = np.zeros((h, w), np.uint8)
+        mx, my = int(w * 0.05), int(h * 0.05)
+        rect = (mx, my, w - 2 * mx, h - 2 * my)
+        bgd, fgd = np.zeros((1, 65), np.float64), np.zeros((1, 65), np.float64)
+        leaf = None
+        try:
+            cv2.grabCut(bgr, gc, rect, bgd, fgd, 4, cv2.GC_INIT_WITH_RECT)
+            fg = ((gc == cv2.GC_FGD) | (gc == cv2.GC_PR_FGD)).astype(np.uint8)
+            fg = cv2.morphologyEx(fg, cv2.MORPH_OPEN, np.ones((5, 5), np.uint8), iterations=2)
+            fg = cv2.morphologyEx(fg, cv2.MORPH_CLOSE, np.ones((9, 9), np.uint8), iterations=2)
+            labels, n = ndimage.label(fg)
+            if n > 0:
+                sizes = ndimage.sum(np.ones_like(labels), labels, index=range(1, n + 1))
+                largest = int(np.argmax(sizes)) + 1
+                leaf_cand = ndimage.binary_fill_holes(labels == largest)
+                if 0.08 <= leaf_cand.mean() <= 0.97:
+                    leaf = leaf_cand
+        except Exception:
+            pass
+
+        if leaf is None:
+            hsv = cv2.cvtColor(bgr, cv2.COLOR_BGR2HSV)
+            hh, s, v = hsv[..., 0], hsv[..., 1], hsv[..., 2]
+            b, g, r = bgr[..., 0].astype(int), bgr[..., 1].astype(int), bgr[..., 2].astype(int)
+            eg = g - (r + b) // 2
+            leafish = (((hh >= 25) & (hh <= 95) & (s >= 40)) | ((s >= 55) & (v >= 55)) | (eg > 12)) & (v > 35)
+            mask = leafish.astype(np.uint8)
+            mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, np.ones((5, 5), np.uint8), iterations=2)
+            mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, np.ones((9, 9), np.uint8), iterations=2)
+            labels, n = ndimage.label(mask)
+            if n > 0:
+                sizes = ndimage.sum(np.ones_like(labels), labels, index=range(1, n + 1))
+                largest = int(np.argmax(sizes)) + 1
+                leaf = ndimage.binary_fill_holes(labels == largest)
+            else:
+                leaf = mask.astype(bool)
+
+        leaf_px = int(leaf.sum())
+        if leaf_px < 50:
+            return 0.0
+
+        # 2. Diseased tissue mask
+        lab = cv2.cvtColor(bgr, cv2.COLOR_BGR2LAB).astype(np.int16)
+        L, A, B = lab[..., 0], lab[..., 1], lab[..., 2]
+        hsv = cv2.cvtColor(bgr, cv2.COLOR_BGR2HSV)
+        hue, sat, val = hsv[..., 0], hsv[..., 1], hsv[..., 2]
+
+        a_med = float(np.median(A[leaf]))
+        b_med = float(np.median(B[leaf]))
+        L_med = float(np.median(L[leaf]))
+
+        brown = (A - a_med) > 14
+        chlorosis = ((B - b_med) > 18) & ((A - a_med) > 3) & (val >= 110)
+        necrosis = (L < L_med - 40) & ~(((hue >= 35) & (hue <= 88)) & (sat >= 70))
+
+        gray = cv2.cvtColor(bgr, cv2.COLOR_BGR2GRAY)
+        k = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (15, 15))
+        blackhat = cv2.morphologyEx(gray, cv2.MORPH_BLACKHAT, k)
+        spots = (blackhat > 22) & ((A - a_med) > 4)
+
+        healthy = ((hue >= 35) & (hue <= 88) & (sat >= 45)) & ((A - a_med) <= 8)
+        diseased = (brown | chlorosis | necrosis | spots) & ~healthy & leaf
+
+        diseased = cv2.morphologyEx(
+            diseased.astype(np.uint8), cv2.MORPH_OPEN, np.ones((2, 2), np.uint8), iterations=1
+        ).astype(bool)
+        diseased = diseased & leaf
+
+        pct = float(np.clip(diseased.sum() / leaf_px * 100.0, 0.0, 100.0))
+        if 0.0 < pct < 1.0:
+            pct = 1.0
+        return round(pct, 1)
+    except Exception as e:
+        logger.warning(f"Leaf coverage measurement skipped: {e}")
+        return 0.0
+
+
 # ─── API Endpoints ──────────────────────────────────────────────────────
 @app.get("/")
 def health_check():
@@ -1069,6 +1169,14 @@ async def predict(
 
     info = DISEASE_INFO.get(final_class, {})
 
+    # Compute leaf lesion coverage percentage
+    if final_class == "Tomato___healthy":
+        leaf_coverage_pct = 0.0
+    elif validation.get("is_leaf", True):
+        leaf_coverage_pct = calculate_leaf_coverage(img_bytes)
+    else:
+        leaf_coverage_pct = None
+
     # Strip internal data before response
     diagnostics = {}
     for key, result in per_model.items():
@@ -1086,6 +1194,7 @@ async def predict(
         "confidence": final_confidence,
         "is_confident": final_confidence >= CONFIDENCE_THRESHOLD,
         "severity": info.get("severity", "Unknown"),
+        "leaf_coverage_pct": leaf_coverage_pct,
         "symptoms": info.get("symptoms", []),
         "treatment": info.get("treatment", []),
         "prevention": info.get("prevention", []),
@@ -1099,7 +1208,7 @@ async def predict(
     # Log prediction summary
     logger.info(
         f"Prediction: {final_class} ({final_confidence}%) | "
-        f"Mode: {mode} | Agree: {models_agree} | Confident: {response['is_confident']}"
+        f"Mode: {mode} | Coverage: {leaf_coverage_pct}% | Agree: {models_agree} | Confident: {response['is_confident']}"
     )
 
     return JSONResponse(response)
