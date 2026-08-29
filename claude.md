@@ -136,10 +136,11 @@ A new `POST /similar` endpoint extracts 1280-d CNN embeddings from EfficientNet-
 |--------|------|-------------|
 | GET | `/` | Health check. Returns status, loaded models, class count. |
 | GET | `/models` | Model metadata (name, params, val accuracy, ONNX size). |
-| POST | `/predict?mode=<mode>` | Predict disease from uploaded image. |
+| POST | `/predict?mode=<mode>` | Predict disease from uploaded image & measure lesion coverage. |
 | POST | `/heatmap?model=<mode>` | Generates an occlusion-sensitivity heatmap (Base64 PNG overlay). |
+| POST | `/gradcam?model=<mode>` | Generates a Grad-CAM / classifier-weighted saliency overlay. |
 | POST | `/similar?top_k=3` | Find top-K visually similar reference cases from the gallery. |
-| POST | `/advisor?disease_class=...&confidence=...` | Generate personalised LLM treatment advice via Groq/Llama. |
+| POST | `/advisor?provider=all&style=farmer_report` | Multi-LLM farmer reports (Gemini, Claude, GPT-4o) + cosine similarity matrix. |
 
 ### Prediction Modes
 - `ensemble` (default): Averages softmax probabilities from all loaded models, picks highest.
@@ -170,7 +171,9 @@ Contains 5 entries, each with:
   "prediction": "Human-readable label",
   "prediction_class": "Tomato___class_name",
   "confidence": 95.23,
+  "is_confident": true,
   "severity": "Moderate",
+  "leaf_coverage_pct": 18.4,
   "symptoms": ["..."],
   "treatment": ["..."],
   "prevention": ["..."],
@@ -180,6 +183,11 @@ Contains 5 entries, each with:
   "diagnostics": {
     "efnet": {"prediction": "...", "confidence": 96.5, "distribution": {...}},
     "resnet": {"prediction": "...", "confidence": 94.0, "distribution": {...}}
+  },
+  "validation": {
+    "is_leaf": true,
+    "leaf_score": 88.5,
+    "reason": ""
   }
 }
 ```

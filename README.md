@@ -6,11 +6,14 @@ AI-powered tomato leaf disease detection using an entropy-weighted ensemble of E
 
 - Multi-model ensemble with entropy-weighted averaging
 - Five tomato classes: Bacterial Spot, Early Blight, Late Blight, Septoria Leaf Spot, and Healthy
+- Real-time diseased leaf-area lesion coverage calculation (GrabCut + CIE-Lab color heuristics)
 - Saliency heatmaps using occlusion sensitivity
 - Grad-CAM-style overlays from final convolutional feature maps
-- Similar reference cases from a pre-computed visual index
-- Personalized advisor endpoint with Groq/Llama support and local fallback advice
-- Clinical report with symptoms, treatment, prevention, and precautions
+- Similar reference cases from a pre-computed 1280-d visual embedding gallery
+- Multi-LLM report generation (Gemini, Claude, GPT-4o, Groq Llama) with text cosine similarity scoring
+- Interactive Model Architecture & Diagnostics specs modal
+- Clinical report with symptoms, treatment, prevention, precautions, and print export
+- Out-of-Distribution (OOD) leaf validation heuristics
 - Confidence thresholding for uncertain predictions
 
 ## Architecture
@@ -129,23 +132,22 @@ git lfs pull
 
 | Method | Path | Description |
 | --- | --- | --- |
-| GET | `/` | Health check |
-| GET | `/models` | Model metadata |
-| POST | `/predict?mode=ensemble\|efnet\|resnet` | Disease prediction |
-| POST | `/heatmap?model=efnet\|resnet` | Occlusion heatmap |
-| POST | `/gradcam?model=efnet\|resnet` | Grad-CAM-style overlay |
-| POST | `/similar?top_k=3` | Similar reference cases |
+| GET | `/` | Health check & system status |
+| GET | `/models` | Model architecture specs (params, validation accuracy, ONNX size) |
+| POST | `/predict?mode=ensemble\|efnet\|resnet` | Disease prediction & lesion coverage percentage |
+| POST | `/heatmap?model=efnet\|resnet` | Occlusion sensitivity heatmap |
+| POST | `/gradcam?model=efnet\|resnet` | Grad-CAM / classifier-weighted saliency overlay |
+| POST | `/similar?top_k=3` | Visual similarity search against reference gallery |
 | POST | `/advisor` | Personalized treatment advice |
 | POST | `/advisor?provider=all&style=farmer_report` | Gemini, Claude, and GPT-4o farmer report versions plus text similarity matrix |
 
-The frontend also includes four built-in report cases under `frontend/public/report-cases/`:
+The frontend includes built-in reference specimens under `frontend/public/report-cases/`:
 
 - Bacterial Spot
 - Early Blight
 - Late Blight
 - Septoria Leaf Spot
-
-Healthy is intentionally excluded from this report comparison set.
+- Healthy Leaf
 
 ## Training Summary
 
