@@ -10,6 +10,7 @@ const REPORT_CASES = [
   { id: 'early_blight', label: 'Early Blight', src: '/report-cases/early_blight.jpeg' },
   { id: 'late_blight', label: 'Late Blight', src: '/report-cases/late_blight.jpeg' },
   { id: 'septoria_leaf_spot', label: 'Septoria Leaf Spot', src: '/report-cases/septoria_leaf_spot.jpeg' },
+  { id: 'healthy', label: 'Healthy Leaf', src: '/report-cases/healthy.jpeg' },
 ];
 
 const SHORT_NAMES = {
@@ -66,7 +67,32 @@ function App() {
   const [reportSimilarity, setReportSimilarity] = useState(null);
   const [isLoadingAdvisory, setIsLoadingAdvisory] = useState(false);
   const [userContext, setUserContext] = useState('');
+  const [showSystemModal, setShowSystemModal] = useState(false);
+  const [modelMetadata, setModelMetadata] = useState(null);
+  const [isLoadingModels, setIsLoadingModels] = useState(false);
   const fileRef = useRef(null);
+
+  const fetchModelMetadata = useCallback(async () => {
+    setIsLoadingModels(true);
+    try {
+      const res = await fetch(`${API_URL}/models`);
+      if (res.ok) {
+        const data = await res.json();
+        setModelMetadata(data);
+      }
+    } catch (e) {
+      console.warn('Failed to fetch model metadata:', e);
+    } finally {
+      setIsLoadingModels(false);
+    }
+  }, []);
+
+  const handleOpenSystemModal = () => {
+    setShowSystemModal(true);
+    if (!modelMetadata) {
+      fetchModelMetadata();
+    }
+  };
 
   // Load history on mount
   useEffect(() => {
@@ -229,7 +255,6 @@ function App() {
 
   const renderMarkdown = (md) => {
     if (!md) return null;
-    // Lightweight markdown renderer: headings, bold, lists, line breaks
     return md.split('\n').map((line, i) => {
       if (line.startsWith('## ')) return <h4 key={i} className="md-h2">{line.replace('## ', '')}</h4>;
       if (line.startsWith('### ')) return <h5 key={i} className="md-h3">{line.replace('### ', '')}</h5>;
@@ -320,9 +345,15 @@ function App() {
             <div className="nav-subtitle">Diagnostic Center</div>
           </div>
         </div>
-        <div className="nav-status">
+        <div
+          className="nav-status interactive"
+          onClick={handleOpenSystemModal}
+          role="button"
+          tabIndex={0}
+          title="Click to view AI system & model architecture specifications"
+        >
           <div className="pulse-dot"></div>
-          <span className="status-text">System Online</span>
+          <span className="status-text">System Specs</span>
         </div>
       </nav>
 
@@ -389,7 +420,7 @@ function App() {
           </div>
 
           <div className="report-case-section fade-up">
-            <div className="section-title">Report Cases</div>
+            <div className="section-title">Reference Specimens</div>
             <div className="report-case-grid">
               {REPORT_CASES.map((reportCase) => (
                 <button
@@ -518,12 +549,22 @@ function App() {
         <aside className="right-panel">
           <div className="report-card">
             <div className="report-header">
-              <div className="icon-box">
-                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
-                </svg>
+              <div className="report-header-left">
+                <div className="icon-box">
+                  <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+                  </svg>
+                </div>
+                <h2>Clinical Report</h2>
               </div>
-              <h2>Clinical Report</h2>
+              {results && (
+                <button className="export-report-btn" onClick={() => window.print()} title="Print or save PDF report">
+                  <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M6.72 13.829c-.24-1.047-.367-2.138-.367-3.253a8.25 8.25 0 0116.5 0c0 1.115-.127 2.206-.367 3.253m-15.766 0c-.574.088-1.127.241-1.65.452a2.25 2.25 0 00-1.423 2.122v2.25c0 .621.504 1.125 1.125 1.125h17.25c.621 0 1.125-.504 1.125-1.125v-2.25a2.25 2.25 0 00-1.423-2.122 15.65 15.65 0 00-1.65-.452m-15.766 0a6.75 6.75 0 0115.766 0" />
+                  </svg>
+                  Export
+                </button>
+              )}
             </div>
 
             {results ? (
@@ -577,6 +618,7 @@ function App() {
                         <div className="severity-pill">Severity: {results.severity}</div>
                       </div>
                     </div>
+
                     <div className="data-block">
                       <div className="block-title core-green">Ensemble Confidence</div>
                       <div className="big-metric">{results.confidence}%</div>
@@ -584,6 +626,32 @@ function App() {
                         {results.is_confident === false ? '⚠ Below confidence threshold' : 'High confidence prediction'}
                       </div>
                     </div>
+
+                    {results.leaf_coverage_pct != null && (
+                      <div className="data-block cascade-in-1">
+                        <div className="coverage-header">
+                          <span className="block-title core-cyan">Lesion / Disease Coverage</span>
+                          <span className={`coverage-pill ${results.leaf_coverage_pct > 30 ? 'high' : results.leaf_coverage_pct > 10 ? 'med' : 'low'}`}>
+                            {results.leaf_coverage_pct}% of Leaf
+                          </span>
+                        </div>
+                        <div className="coverage-track">
+                          <div
+                            className={`coverage-fill ${results.leaf_coverage_pct > 30 ? 'high' : results.leaf_coverage_pct > 10 ? 'med' : 'low'}`}
+                            style={{ width: `${Math.max(results.leaf_coverage_pct, results.prediction_class === 'Tomato___healthy' ? 0 : 2)}%` }}
+                          />
+                        </div>
+                        <div className="coverage-sub">
+                          {results.prediction_class === 'Tomato___healthy'
+                            ? 'Clean healthy foliage detected (0% diseased tissue).'
+                            : results.leaf_coverage_pct > 30
+                            ? 'Extensive lesion spreading across leaf surface — urgent intervention recommended.'
+                            : results.leaf_coverage_pct > 10
+                            ? 'Moderate disease spots present on leaf canopy.'
+                            : 'Early-stage isolated spots detected.'}
+                        </div>
+                      </div>
+                    )}
                   </>
                 )}
 
@@ -745,6 +813,93 @@ function App() {
                 </div>
               </div>
             ))}
+          </div>
+        </div>
+      )}
+
+      {/* System Specs & Architecture Modal */}
+      {showSystemModal && (
+        <div className="modal-backdrop fade-in" onClick={() => setShowSystemModal(false)}>
+          <div className="modal-card fade-up" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <div className="modal-title-wrap">
+                <div className="nav-logo modal-logo">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446A9 9 0 1 1 12 3z" />
+                  </svg>
+                </div>
+                <div>
+                  <h3>System & Model Architecture</h3>
+                  <p>Tomato Diagnostic Center v2.1 Pipeline</p>
+                </div>
+              </div>
+              <button className="modal-close-btn" onClick={() => setShowSystemModal(false)} aria-label="Close modal">
+                ✕
+              </button>
+            </div>
+
+            <div className="modal-body">
+              {isLoadingModels && !modelMetadata ? (
+                <div className="modal-loading">
+                  <span className="spinner"></span> Loading model telemetry...
+                </div>
+              ) : (
+                <>
+                  <div className="specs-grid">
+                    <div className="spec-card">
+                      <div className="spec-card-header">
+                        <span className="spec-badge efnet">Fast Ensemble Member</span>
+                        <h4>EfficientNet-B0</h4>
+                      </div>
+                      <div className="spec-metric-row">
+                        <span>Validation Accuracy</span>
+                        <strong>{modelMetadata?.efnet?.best_val_acc || 98.55}%</strong>
+                      </div>
+                      <div className="spec-metric-row">
+                        <span>Parameters</span>
+                        <strong>{modelMetadata?.efnet?.params || '~5.3M'}</strong>
+                      </div>
+                      <div className="spec-metric-row">
+                        <span>ONNX Size</span>
+                        <strong>{modelMetadata?.efnet?.size_mb || 16} MB</strong>
+                      </div>
+                      <p className="spec-desc">Fine-tuned lightweight CNN backbone providing fast inference and penultimate feature embeddings for visual similarity.</p>
+                    </div>
+
+                    <div className="spec-card">
+                      <div className="spec-card-header">
+                        <span className="spec-badge resnet">Deep Ensemble Member</span>
+                        <h4>ResNet-50</h4>
+                      </div>
+                      <div className="spec-metric-row">
+                        <span>Validation Accuracy</span>
+                        <strong>{modelMetadata?.resnet?.best_val_acc || 98.63}%</strong>
+                      </div>
+                      <div className="spec-metric-row">
+                        <span>Parameters</span>
+                        <strong>{modelMetadata?.resnet?.params || '~25.6M'}</strong>
+                      </div>
+                      <div className="spec-metric-row">
+                        <span>ONNX Size</span>
+                        <strong>{modelMetadata?.resnet?.size_mb || 94} MB</strong>
+                      </div>
+                      <p className="spec-desc">Deep residual network trained with Mixup and Label Smoothing for robust representation across subtle disease boundaries.</p>
+                    </div>
+                  </div>
+
+                  <div className="spec-pipeline-box">
+                    <div className="spec-pipeline-title">Active AI Pipeline Modules</div>
+                    <div className="pipeline-chips">
+                      <span className="pipeline-chip">⚡ Entropy-Weighted Consensus</span>
+                      <span className="pipeline-chip">🔬 Grad-CAM & Occlusion Saliency</span>
+                      <span className="pipeline-chip">🌿 GrabCut Lesion Coverage</span>
+                      <span className="pipeline-chip">🔍 1280-d Similarity Search (Top-3 Gallery)</span>
+                      <span className="pipeline-chip">🤖 Multi-LLM Advisory (Gemini, Claude, GPT-4o, Llama)</span>
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
           </div>
         </div>
       )}
