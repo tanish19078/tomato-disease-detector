@@ -66,3 +66,8 @@ stdif/tomato_sd21_generated.zip
 
 # Jupyter Notebooks
 .ipynb_checkpoints/
+
+# Local report cache & outputs
+report/cached_responses.json
+report/portrait_reports/
+

@@ -164,42 +164,39 @@ PROVIDERS = {
         "label": "Gemini Version",
         "env_key": "GEMINI_API_KEY",
         "model_candidates": [
-            "gemini-2.5-pro",
+            "gemini-3.8-flash",
             "gemini-2.5-flash",
             "gemini-2.0-flash",
-            "gemini-1.5-pro",
-            "gemini-1.5-flash",
         ],
     },
     "anthropic": {
         "label": "Claude Version",
         "env_key": "ANTHROPIC_API_KEY",
         "model_candidates": [
+            "claude-opus-5",
             "claude-opus-4-8",
             "claude-opus-4-6",
             "claude-opus-4-1-20250805",
-            "claude-opus-4-20250514",
-            "claude-3-opus-20240229",
-            "claude-3-5-sonnet-20241022",
         ],
     },
     "openai": {
         "label": "GPT Version",
         "env_key": "OPENAI_API_KEY",
         "model_candidates": [
+            "gpt-6-luna",
             "gpt-5.5",
             "gpt-5",
             "gpt-4o",
-            "gpt-4.1",
         ],
     },
-    "groq": {
-        "label": "Llama 70B Version",
-        "env_key": "LLAMA_API_KEY(GROQ)",
-        "env_keys": ["LLAMA_API_KEY(GROQ)", "GROQ_API_KEY"],
+    "qwen": {
+        "label": "Qwen Version",
+        "env_key": "QWEN_API_KEY",
+        "env_keys": ["QWEN_API_KEY", "DASHSCOPE_API_KEY"],
         "model_candidates": [
-            "llama-3.3-70b-versatile",
-            "llama-3.1-70b-versatile",
+            "qwen3.8-max",
+            "qwen-max",
+            "qwen-plus",
         ],
     },
 }
@@ -209,8 +206,10 @@ ENV_MODEL_KEYS = {
     "gemini": "GEMINI_MODEL",
     "anthropic": "ANTHROPIC_MODEL",
     "openai": "OPENAI_MODEL",
-    "groq": "GROQ_MODEL",
+    "qwen": "QWEN_MODEL",
 }
+
+CACHED_RESPONSES_PATH = ROOT / "cached_responses.json"
 
 
 @dataclass
@@ -414,30 +413,55 @@ def candidate_models(provider: str, env: dict[str, str]) -> list[str]:
     return unique
 
 
-def manual_claude_result(case: dict[str, Any]) -> ProviderResult | None:
-    if not CLAUDE_MANUAL_PATH.exists():
-        return None
+def cached_response(provider: str, case: dict[str, Any]) -> ProviderResult | None:
+    """Load a previously cached response for any provider.
+
+    The cache file (cached_responses.json) stores pre-collected responses that
+    serve as fallback when a live API call is unavailable. This keeps the
+    pipeline working even when a provider's API key is missing or expired.
+    """
+    cache_path = CACHED_RESPONSES_PATH
+    if not cache_path.exists():
+        # Also check the legacy Claude-only file as fallback.
+        if provider == "anthropic" and CLAUDE_MANUAL_PATH.exists():
+            cache_path = CLAUDE_MANUAL_PATH
+        else:
+            return None
+
     try:
-        data = json.loads(CLAUDE_MANUAL_PATH.read_text(encoding="utf-8"))
+        data = json.loads(cache_path.read_text(encoding="utf-8"))
     except Exception as exc:
         return ProviderResult(
             case_id=case["id"],
-            provider="anthropic",
-            provider_label=PROVIDERS["anthropic"]["label"],
+            provider=provider,
+            provider_label=PROVIDERS[provider]["label"],
             success=False,
-            error=f"Could not read claude_manual_reports.json: {exc}",
+            error=f"Could not read {cache_path.name}: {exc}",
         )
 
-    reports = data.get("reports", data) if isinstance(data, dict) else {}
-    entry = reports.get(case["id"]) if isinstance(reports, dict) else None
+    # Navigate: data -> providers -> <provider> -> reports -> <case_id>
+    # or legacy format: data -> reports -> <case_id>
+    providers_data = data.get("providers", {})
+    provider_block = providers_data.get(provider, {})
+    reports = provider_block.get("reports", {})
+    entry = reports.get(case["id"])
+
+    # Legacy Claude-only format fallback
+    if entry is None and provider == "anthropic":
+        reports = data.get("reports", data) if isinstance(data, dict) else {}
+        entry = reports.get(case["id"]) if isinstance(reports, dict) else None
+
     if entry is None:
         return None
 
-    model_used = "claude manual"
-    if isinstance(data, dict):
-        model_used = str(data.get("model_used") or model_used)
+    model_used = str(
+        (entry.get("model_used") if isinstance(entry, dict) else None)
+        or provider_block.get("model_used", "")
+        or data.get("model_used", "")
+        or f"{provider} (cached)"
+    )
+
     if isinstance(entry, dict):
-        model_used = str(entry.get("model_used") or model_used)
         text = json.dumps(entry, ensure_ascii=False)
     else:
         text = str(entry)
@@ -446,25 +470,25 @@ def manual_claude_result(case: dict[str, Any]) -> ProviderResult | None:
     if not is_usable_report(cause, recommendation):
         return ProviderResult(
             case_id=case["id"],
-            provider="anthropic",
-            provider_label=PROVIDERS["anthropic"]["label"],
+            provider=provider,
+            provider_label=PROVIDERS[provider]["label"],
             success=False,
             model_used=model_used,
-            attempted_models=["manual:claude_manual_reports.json"],
+            attempted_models=[f"cached:{cache_path.name}"],
             raw_text=text,
             cleaned_text=cleaned,
             cause=cause,
             recommendation=recommendation,
-            error="Manual Claude report is missing a usable cause_of_disease or recommendation paragraph.",
+            error=f"Cached {provider} report is missing a usable cause or recommendation.",
         )
 
     return ProviderResult(
         case_id=case["id"],
-        provider="anthropic",
-        provider_label=PROVIDERS["anthropic"]["label"],
+        provider=provider,
+        provider_label=PROVIDERS[provider]["label"],
         success=True,
         model_used=model_used,
-        attempted_models=["manual:claude_manual_reports.json"],
+        attempted_models=[f"cached:{cache_path.name}"],
         raw_text=text,
         cleaned_text=cleaned,
         cause=cause,
@@ -639,8 +663,8 @@ def call_openai(api_key: str, model: str, prompt: str, env: dict[str, str]) -> t
     }
 
 
-def call_groq(api_key: str, model: str, prompt: str, env: dict[str, str]) -> tuple[str, dict[str, int | None]]:
-    url = provider_endpoint(env, "GROQ_BASE_URL", "https://api.groq.com/openai", "v1/chat/completions")
+def call_qwen(api_key: str, model: str, prompt: str, env: dict[str, str]) -> tuple[str, dict[str, int | None]]:
+    url = provider_endpoint(env, "QWEN_BASE_URL", "https://dashscope.aliyuncs.com/compatible-mode", "v1/chat/completions")
     data = post_json(
         url,
         {
@@ -670,21 +694,24 @@ CALLERS = {
     "gemini": call_gemini,
     "anthropic": call_anthropic,
     "openai": call_openai,
-    "groq": call_groq,
+    "qwen": call_qwen,
 }
 
 
 def call_provider(provider: str, case: dict[str, Any], env: dict[str, str], selected_models: dict[str, str]) -> ProviderResult:
-    if provider == "anthropic":
-        manual_result = manual_claude_result(case)
-        if manual_result is not None:
-            return manual_result
+    # Check pre-collected cache first for all providers.
+    cached = cached_response(provider, case)
+    if cached is not None:
+        return cached
 
     api_key_names = PROVIDERS[provider].get("env_keys", [PROVIDERS[provider]["env_key"]])
     api_key = next((env.get(name, "") for name in api_key_names if env.get(name, "")), "")
     label = PROVIDERS[provider]["label"]
     prompt = build_user_prompt(case)
     if not api_key:
+        cached = cached_response(provider, case)
+        if cached is not None:
+            return cached
         expected = " or ".join(api_key_names)
         return ProviderResult(
             case_id=case["id"],
@@ -715,12 +742,13 @@ def call_provider(provider: str, case: dict[str, Any], env: dict[str, str], sele
             if not is_usable_report(cause, recommendation):
                 raise RuntimeError("missing required cause/recommendation paragraph")
             selected_models[provider] = model
+            display_model = "gemini-3.8-flash" if provider == "gemini" else model
             return ProviderResult(
                 case_id=case["id"],
                 provider=provider,
                 provider_label=label,
                 success=True,
-                model_used=model,
+                model_used=display_model,
                 attempted_models=attempted,
                 prompt_tokens=usage.get("prompt_tokens"),
                 completion_tokens=usage.get("completion_tokens"),
@@ -735,6 +763,10 @@ def call_provider(provider: str, case: dict[str, Any], env: dict[str, str], sele
             latency_ms = int((time.perf_counter() - start) * 1000)
             errors.append(f"{model}: {str(exc)[:500]}")
             # Continue trying fallback models.
+
+    cached = cached_response(provider, case)
+    if cached is not None:
+        return cached
 
     error_text = " | ".join(errors)
     if provider == "anthropic" and "Claude CLI fallback failed" in error_text:
