@@ -118,6 +118,23 @@ DISEASE_CASES = [
             "debris, and use labeled fungicide protection if the disease continues spreading."
         ),
     },
+    {
+        "id": "healthy",
+        "image": IMAGES_DIR / "tomato healthy.jpeg",
+        "class_name": "Tomato___healthy",
+        "display_name": "Tomato Healthy Leaf",
+        "confidence": 99.4,
+        "severity": "None (Healthy)",
+        "symptoms": "uniform bright green leaf surface, clean margins, intact veins, no lesions or yellowing",
+        "cause_reference": (
+            "No disease, fungus, water mold, or bacterial infection is present on this tomato leaf. "
+            "The even green color and clean edges show healthy growth with good water, sunlight, and airflow."
+        ),
+        "recommended_actions": (
+            "No spray or medicine is needed right now. Continue watering at the soil base, keep good spacing "
+            "for fresh air, mulch around the roots, and check the lower leaves once a week to keep the plant healthy."
+        ),
+    },
 ]
 
 
