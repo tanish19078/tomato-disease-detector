@@ -43,7 +43,7 @@ from leaf_coverage import measure_coverage
 
 ROOT = Path(__file__).resolve().parent
 OUTPUT_DIR = ROOT / "final_paper_reports"
-PROVIDER_ORDER = ["gemini", "anthropic", "openai", "groq"]
+PROVIDER_ORDER = ["gemini", "anthropic", "openai", "qwen"]
 
 
 # --------------------------------------------------------------------------- #
@@ -70,7 +70,7 @@ PROVIDER_ACCENT = {
     "gemini": "#4f86e6",
     "anthropic": "#8a63d2",
     "openai": "#1f9d6b",
-    "groq": "#e2643c",
+    "qwen": "#ff6a13",
 }
 
 

@@ -3,7 +3,7 @@ Build final farmer-facing AI report images for the four disease reference images
 
 Inputs:
     report/.env  -> GEMINI_API_KEY, ANTHROPIC_API_KEY, ANTHROPIC_BASE_URL,
-                   OPENAI_API_KEY, OPENAI_BASE_URL, LLAMA_API_KEY(GROQ)
+                   OPENAI_API_KEY, OPENAI_BASE_URL, QWEN_API_KEY
     report/images/*.jpeg disease reference images
 
 Outputs:
@@ -900,12 +900,12 @@ def build_workbook(all_results: list[ProviderResult], matrices: dict[str, list[l
 
     sim_ws = wb.create_sheet("Similarity Matrix")
     sim_ws.append(["case_id", "row_model", "column_model", "similarity_percent"])
-    provider_order = ["gemini", "anthropic", "openai", "groq"]
+    provider_order = ["gemini", "anthropic", "openai", "qwen"]
     provider_labels = {
         "gemini": "Gemini",
         "anthropic": "Claude",
         "openai": "GPT",
-        "groq": "Llama 70B",
+        "qwen": "Qwen",
     }
     for case_id, matrix in matrices.items():
         for row_idx, row_provider in enumerate(provider_order):
