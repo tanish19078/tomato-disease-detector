@@ -138,28 +138,22 @@ DISEASE_CASES = [
 ]
 
 
-SYSTEM_PROMPT = """You are a friendly farming helper writing short disease reports for everyday farmers.
-Write like you are talking to a farmer who has never studied science. Use the
-simplest words possible — the kind you would use when explaining to a friend.
-
-IMPORTANT LANGUAGE RULES:
-- NEVER use scientific names, Latin names, or technical biology terms
-  (e.g. do NOT write Xanthomonas, Alternaria solani, Phytophthora infestans,
-   or any genus/species names).
-- Instead say things like "a type of bacteria", "a fungus", "a fast-spreading
-  water mold" — always in plain everyday words.
-- Keep sentences short (under 20 words each).
-- Use words a 10-year-old could understand.
+SYSTEM_PROMPT = """You are an agricultural expert writing short disease reports for farmers.
+Use simple, easy-to-understand language. Do not assume climate, season, soil,
+irrigation method, pesticide access, or farm environment unless it is explicitly provided.
 
 Return only a valid JSON object with exactly these keys:
 {
-  "plant_disease": "<disease name in plain English>",
-  "cause_of_disease": "<one clear paragraph, 2-4 very short sentences, no bullets, no numbering, no scientific names>",
-  "recommendation": "<one clear paragraph, 2-4 very short sentences, no bullets, no numbering, practical steps only>"
+  "plant_disease": "<disease name>",
+  "cause_of_disease": "<one clear paragraph, 2-4 short sentences, no bullets and no numbering>",
+  "recommendation": "<one clear paragraph, 2-4 short sentences, no bullets and no numbering>"
 }
 
-Extra rules:
+Rules:
+- Avoid bullets in cause_of_disease and recommendation.
 - Do not copy the example image wording exactly.
+- Use practical farmer language.
+- Always end the recommendation paragraph with the exact sentence: "For further guidance, please consult a qualified agronomist or plant expert."
 - Mention uncertainty only if confidence is low or model agreement is weak.
 - Do not add markdown, tables, emojis, references, or extra keys."""
 
@@ -398,21 +392,18 @@ def is_usable_report(cause: str, recommendation: str) -> bool:
 
 
 def build_user_prompt(case: dict[str, Any]) -> str:
-    return f"""Write a simple disease report about this sick tomato leaf.
+    return f"""Prepare a farmer-facing report for this tomato leaf disease.
 
+Disease class: {case['class_name']}
 Disease name: {case['display_name']}
-How sure the system is: {case['confidence']}%
-How bad it looks: {case['severity']}
-What can be seen on the leaf: {case['symptoms']}
-What causes this disease (for your reference): {case['cause_reference']}
-What the farmer should do (for your reference): {case['recommended_actions']}
+Prediction confidence: {case['confidence']}%
+Severity: {case['severity']}
+Observed visual symptoms: {case['symptoms']}
+Cause reference for grounding: {case['cause_reference']}
+Practical recommendation reference: {case['recommended_actions']}
 
-IMPORTANT: Write in very simple language. Do NOT use any scientific names or
-Latin terms at all. Say "a type of bacteria" or "a fungus" instead. Keep each
-sentence under 20 words. Write like you are explaining to a friend who farms.
-
-Return valid JSON only. Keep cause_of_disease and recommendation as plain
-paragraphs (no bullets, no numbering)."""
+Write a fresh report as valid JSON only. Keep cause_of_disease and
+recommendation as plain paragraphs, not bullets. Make it simple enough for farmers."""
 
 
 def candidate_models(provider: str, env: dict[str, str]) -> list[str]:
