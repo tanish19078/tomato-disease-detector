@@ -428,18 +428,6 @@ def main():
     xlsx_path = build_comparison_spreadsheet(all_results, perf)
     print(f"Spreadsheet: {xlsx_path}", flush=True)
 
-    # --- CSV ---------------------------------------------------------------- #
-    csv_path = OUTPUT_DIR / "api_usage.csv"
-    with csv_path.open("w", newline="", encoding="utf-8") as f:
-        writer = csv.writer(f)
-        writer.writerow(["case_id", "provider", "success", "model_used",
-                         "prompt_tokens", "completion_tokens", "total_tokens",
-                         "latency_ms", "error"])
-        for r in all_results:
-            writer.writerow([r.case_id, r.provider, r.success, r.model_used,
-                             r.prompt_tokens, r.completion_tokens, r.total_tokens,
-                             r.latency_ms, r.error])
-
     # --- zip ---------------------------------------------------------------- #
     zip_path = OUTPUT_DIR / "portrait_reports.zip"
     if zip_path.exists():
